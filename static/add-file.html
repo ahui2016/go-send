@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/public/bootstrap.min.css">
+
+    <title>Add File .. go-send</title>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="/public/jquery-3.5.1.min.js"></script>
+    <script src="/public/bootstrap.bundle.min.js"></script>
+    <script src="/public/util.js"></script>
+
+    <style></style>
+
+  </head>
+
+  <body>
+    <div class="container" style="max-width: 680px; min-width: 400px;">
+      <nav class="navbar navbar-light bg-light mt-1">
+          <span class="navbar-brand mb-0 h1">Add File</span>
+      </nav>
+
+      <form id="file-form" style="margin-top: 50px;" autocomplete="off">
+
+        <div class="custom-file" style="margin-bottom: 50px;">
+          <input type="file" class="custom-file-input" id="file-input">
+          <label class="custom-file-label" id="file-input-label" for="file-input">Choose file</label>
+        </div>
+
+        <!--成功提示-->
+        <template id="alert-success-tmpl">
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="AlertMessage"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </template>
+
+        <!--错误提示-->
+        <template id="alert-danger-tmpl">
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span class="AlertMessage"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </template>
+        
+        <div id="hidden-fields" style="display: none;">
+          <div class="form-group row" id="thumbnail" style="display: none;">
+            <label for="file-size" class="col-sm-2 col-form-label">Thumbnail</label>
+            <div class="col-sm-10">
+              <canvas class="img-thumbnail"></canvas>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="file-size" class="col-sm-2 col-form-label">File Size</label>
+            <div class="col-sm-10">
+              <input type="text" readonly class="form-control-plaintext" id="file-size">
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="file-name" class="col-sm-2 col-form-label">File Name</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="file-name">
+            </div>
+          </div>
+          
+          <input type="submit" disabled hidden />
+          <button id="upload-btn" type="button" class="btn btn-primary">Upload</button>
+          <button id="upload-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
+            Upload
+            <span class="spinner-border spinner-border-sm" role="status"></span>
+          </button>  
+        </div>
+
+      </form>
+      
+    <script>
+    // 如果有些函数在这里找不到，那就是在 util.js 里。
+  
+  let newTags = [];
+  let fileSha256;
+  
+  $('#upload-btn').click(checkHashUpload);
+  
+  $('#file-input').change(event => {
+    let file = event.target.files[0];
+  
+    // Chrome 取消选择文件也会触发 change 事件, Firefox 无此问题.
+    if (!file) {
+      $('#file-input-label').text('Choose file')
+      $('#hidden-fields').hide();
+    } else {
+      $('#hidden-fields').show();
+      $('#file-input-label').text(file.name);
+  
+      tryToDrawThumb(file, '#thumbnail');
+      sha256Hex(file).then(hashHex => fileSha256 = hashHex);
+  
+      $('#file-size').val(fileSizeToString(file.size));
+      $('#file-name').val(file.name).focus();
+    }
+    $('.alert-dismissible').alert('close');
+  });
+  
+  // 检查文件的校验和，如无冲突则上传文件。
+  function checkHashUpload(event) {
+    event.preventDefault();
+  
+    let form = new FormData();
+    form.append('hashHex', fileSha256);
+  
+    ajaxPost(form, '/api/checksum', $('#upload-btn'), function() {
+      if (this.status == 200) {
+        uploadFile();
+      } else {
+        let err = !this.response ? this.status : this.response.message;
+        let errMsg = "Error: Upload Failed. " + err;
+        insertErrorAlert(errMsg);
+      }
+    });
+  }
+  
+  // 上传文件
+  function uploadFile() {
+    let form = new FormData();
+    let file = document.querySelector('#file-input').files[0];
+    form.append('file', file);
+    form.append('checksum', fileSha256);
+    form.append('file-name', $('#file-name').val());
+    form.append('file-size', file.size);
+  
+    ajaxPostWithSpinner(form, '/api/upload-file', 'upload', function() {
+      if (this.status == 200) {
+        insertSuccessAlert('OK. File Uploaded.');
+        $('#hidden-fields').hide();
+      } else {
+        let err = !this.response ? this.status : this.response.message;
+        let errMsg = "Error: Upload Failed. " + err;
+        insertErrorAlert(errMsg);
+      }
+    });
+  }
+  
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+
+  $('#file-input').focus();
+
+      </script>
+    </body>
+</html>
