@@ -2,31 +2,63 @@ package main
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/ahui2016/go-send/database"
-	"github.com/ahui2016/go-send/util"
+	"github.com/ahui2016/goutil"
 )
 
 const (
-	staticFolder = "static"
+	gosendDataFolderName = "gosend_data_folder"
+	databaseFileName     = "gosend.db"
+	gosendFileExt        = ".send"
+	thumbFileExt         = ".small"
+	staticFolder         = "static"
+	password             = "abc"
+
+	// 99 days, for session
+	maxAge = 60 * 60 * 24 * 99
+
+	// 3 MB, for http.MaxBytesReader
+	maxBytes int64 = 1024 * 1024 * 3
 )
 
 var (
-	passwordTry = 0
-	HTML        = make(map[string]string)
-	db          = new(database.DB)
+	gosendDataDir string
+	dbPath        string
+)
+
+var (
+	HTML = make(map[string]string)
+	db   = new(database.DB)
 )
 
 func init() {
+	gosendDataDir = filepath.Join(userHomeDir(), gosendDataFolderName)
+	dbPath = filepath.Join(gosendDataDir, databaseFileName)
 	fillHTML()
+	goutil.MustMkdir(gosendDataDir)
+
+	// open the db here, close the db in main().
+	if err := db.Open(maxAge, dbPath); err != nil {
+		panic(err)
+	}
+}
+
+func userHomeDir() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return homeDir
 }
 
 // fillHTML 把读取 html 文件的内容，塞进 HTML (map[string]string)。
 // 目的是方便以字符串的形式把 html 文件直接喂给 http.ResponseWriter.
 func fillHTML() {
-	filePaths, err := util.FilesInDir(staticFolder, ".html")
+	filePaths, err := goutil.FilesInDir(staticFolder, ".html")
 	if err != nil {
 		panic(err)
 	}
