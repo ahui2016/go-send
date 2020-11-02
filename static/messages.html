@@ -106,10 +106,6 @@
     <script>
     // 如果有些函数在这里找不到，那就是在 util.js 里。
 
-$(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-})
-
 initData();
 
 function initData() {
@@ -119,9 +115,7 @@ function initData() {
         let item = $('#msg-tmpl').contents().clone();
         item.insertAfter('#msg-tmpl');
         item.find('.card-text').text(message.TextMsg);
-        item.find('.UpIcon').click(() => {
-          item.insertAfter('#msg-tmpl');
-        });
+        item.find('.Icon').tooltip();
 
         let copyIcon = item.find('.CopyIcon');
         copyIcon.click(() => {
@@ -135,6 +129,11 @@ function initData() {
             copyIcon.tooltip('dispose').attr('title', 'copy').tooltip();
           }, 2000);
           $('#textForCopy').hide();
+        });
+        
+        item.find('.UpIcon').click(() => {
+          item.insertAfter('#msg-tmpl');
+          $('.UpIcon').tooltip('hide');
         });
       });
     } else {
