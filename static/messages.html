@@ -103,6 +103,27 @@
 
     <input form="not-exist" type="text" id="textForCopy" style="display: none;">
 
+    <div class="modal" tabindex="-1" role="dialog" id="delete-dialog">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Confirm Deletion</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <p>Throw it to the recycle bin?</p>
+              <p>(Title: <span id="title-in-modal"></span>)</p>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+              <button type="button" class="btn btn-primary SubmitButton">Yes</button>
+          </div>
+          </div>
+      </div>
+    </div>
+
     <script>
     // 如果有些函数在这里找不到，那就是在 util.js 里。
 
