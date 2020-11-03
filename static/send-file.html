@@ -124,8 +124,7 @@
       if (this.status == 200) {
         uploadFile();
       } else {
-        let err = !this.response ? this.status : this.response.message;
-        let errMsg = "Error: Upload Failed. " + err;
+        let errMsg = !this.response ? this.status : this.response.message;
         insertErrorAlert(errMsg);
       }
     });
@@ -137,25 +136,20 @@
     let file = document.querySelector('#file-input').files[0];
     form.append('file', file);
     form.append('checksum', fileSha256);
-    form.append('file-name', $('#file-name').val());
-    form.append('file-size', file.size);
+    form.append('filename', $('#file-name').val());
+    form.append('filesize', file.size);
   
     ajaxPostWithSpinner(form, '/api/upload-file', 'upload', function() {
       if (this.status == 200) {
         insertSuccessAlert('OK. File Uploaded.');
         $('#hidden-fields').hide();
       } else {
-        let err = !this.response ? this.status : this.response.message;
-        let errMsg = "Error: Upload Failed. " + err;
+        let errMsg = !this.response ? this.status : this.response.message;
         insertErrorAlert(errMsg);
       }
     });
   }
   
-  $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-  })
-
   $('#file-input').focus();
 
       </script>

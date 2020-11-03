@@ -86,6 +86,16 @@ func (db *DB) NewTextMsg(textMsg string) (*Message, error) {
 	return message, nil
 }
 
+// NewFileMsg .
+func (db *DB) NewFileMsg(filename string) (*Message, error) {
+	message, err := db.newMessage(model.FileMsg)
+	if err != nil {
+		return nil, err
+	}
+	message.SetFileNameType(filename)
+	return message, nil
+}
+
 func (db *DB) newMessage(msgType model.MsgType) (*Message, error) {
 	id, err := db.getNextID()
 	if err != nil {

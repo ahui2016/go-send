@@ -172,17 +172,12 @@ function simpleDate(date) {
 
 // 缩略图的url
 function thumbURL(id) {
-  return '/thumb/' + id + '.small';
+  return '/files/' + id + '.small';
 }
 
-// 缓存文件的url
-function cacheURL(id) {
-  return '/cache/' + id + '.reco';
-}
-
-// 临时文件的url
-function tempURL(id) {
-  return '/temp/' + id + '.reco';
+// 文件的url
+function fileURL(id) {
+  return '/files/' + id + '.send';
 }
 
 // 带时间的url, 用于刷新文件。

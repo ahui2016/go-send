@@ -1,10 +1,17 @@
 package model
 
 import (
+	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ahui2016/goutil"
+)
+
+const (
+	// FileNameMinLength 规定包括后缀名在内文件名长度不可小于 5.
+	FileNameMinLength = 5
 )
 
 // MsgType 是一个枚举类型，用来区分 Message 的类型。
@@ -31,6 +38,7 @@ type Message struct {
 	DeletedAt string `storm:"index"`
 }
 
+// NewMessage .
 func NewMessage(id string, msgType MsgType) *Message {
 	now := goutil.TimeNow()
 	return &Message{
@@ -39,6 +47,23 @@ func NewMessage(id string, msgType MsgType) *Message {
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
+}
+
+// SetFileNameType 同时设置 FileName 和 FileType.
+// 注意不可直接设置 FileName, 每次都应该使用 SetFileNameType, 以确保同时设置 FileType.
+func (message *Message) SetFileNameType(filename string) error {
+	filename = strings.TrimSpace(filename)
+	if len(filename) < FileNameMinLength {
+		return errors.New("filename is too short")
+	}
+	message.FileName = filename
+	message.FileType = goutil.TypeByFilename(filename)
+	return nil
+}
+
+// IsImage .
+func (message *Message) IsImage() bool {
+	return strings.HasPrefix(message.FileType, "image")
 }
 
 // IncreaseID 用来记录自动生成 ID 的状态，便于生成特有的自增 ID.
