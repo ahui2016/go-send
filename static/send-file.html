@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/public/bootstrap.min.css">
 
-    <title>Add File .. go-send</title>
+    <title>Send File .. go-send</title>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -23,7 +23,7 @@
   <body>
     <div class="container" style="max-width: 680px; min-width: 400px;">
       <nav class="navbar navbar-light bg-light mt-1">
-          <span class="navbar-brand mb-0 h1">Add File</span>
+          <span class="navbar-brand mb-0 h1">Send File</span>
       </nav>
 
       <form id="file-form" style="margin-top: 50px;" autocomplete="off">
@@ -76,9 +76,9 @@
           </div>
           
           <input type="submit" disabled hidden />
-          <button id="upload-btn" type="button" class="btn btn-primary">Upload</button>
-          <button id="upload-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
-            Upload
+          <button id="send-btn" type="button" class="btn btn-primary">Send</button>
+          <button id="send-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
+            Send
             <span class="spinner-border spinner-border-sm" role="status"></span>
           </button>  
         </div>
@@ -91,7 +91,7 @@
   let newTags = [];
   let fileSha256;
   
-  $('#upload-btn').click(checkHashUpload);
+  $('#send-btn').click(checkHashUpload);
   
   $('#file-input').change(event => {
     let file = event.target.files[0];

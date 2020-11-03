@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
 )
 
@@ -52,8 +51,11 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	if textMsg == "" {
 		goutil.JsonMessage(w, "the message is empty", 400)
 	}
-	message := model.NewTextMsg(textMsg)
-	db.Insert(message)
+	message, err := db.NewTextMsg(textMsg)
+	if goutil.CheckErr(w, err, 500) {
+		return
+	}
+	goutil.CheckErr(w, db.Insert(message), 500)
 }
 
 func getAllHandler(w http.ResponseWriter, r *http.Request) {

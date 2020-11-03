@@ -41,12 +41,6 @@ func NewMessage(id string, msgType MsgType) *Message {
 	}
 }
 
-func NewTextMsg(id, msg string) *Message {
-	message := NewMessage(id, TextMsg)
-	message.TextMsg = msg
-	return message
-}
-
 // IncreaseID 用来记录自动生成 ID 的状态，便于生成特有的自增 ID.
 // 该 ID 由年份与自增数两部分组成，分别取两个部分的 36 进制, 转字符串后拼接而成。
 type IncreaseID struct {
@@ -54,11 +48,11 @@ type IncreaseID struct {
 	Count int
 }
 
-// NewID 生成初始 id, 当且仅当程序每一次使用时使用该函数，
+// FirstID 生成初始 id, 当且仅当程序每一次使用时（数据库为空时）使用该函数，
 // 之后应使用 Increase 函数来获得新 id.
-func NewID() IncreaseID {
+func FirstID() IncreaseID {
 	nowYear := time.Now().Year()
-	return IncreaseID{nowYear, 1}
+	return IncreaseID{nowYear, 0}
 }
 
 // ParseID 把字符串形式的 id 转换为 IncreaseID.

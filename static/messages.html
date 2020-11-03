@@ -33,6 +33,15 @@
     <div class="container" style="max-width: 680px; min-width: 400px;">
       <nav class="navbar navbar-light bg-light mt-1">
           <span class="navbar-brand mb-0 h1">Messages</span>
+          <div class="btn-toolbar" role="toolbar" aria-label="nav bar">
+            <div class="btn-group mr-2" role="group">
+                <a role="button" class="btn btn-outline-dark NavbarBtn" 
+                    href="/send-file" data-toggle="tooltip" title="send file">
+                  <img src="/public/icons/file-earmark-plus.svg" 
+                      alt="send file" style="font-size:3rem;" />
+                </a>
+            </div>
+        </div>
       </nav>
 
       <form id="msg-form" style="margin: 50px 0 50px 0;" autocomplete="off">
@@ -74,7 +83,9 @@
         <template id="msg-tmpl">
           <div class="card mb-3">
             <div class="card-body">
-              <h6 class="card-subtitle mb-2 text-muted DateTime"></h6>
+              <h6 class="card-subtitle mb-2 text-muted">id:
+                <span class="MsgID text-uppercase"></span>
+              </h6>
               <p class="card-text"></p>
               <p class="text-right mb-0">
                 <svg class="Icon UpDelete bi bi-trash" title="删除"
@@ -136,6 +147,7 @@ function initData() {
         let item = $('#msg-tmpl').contents().clone();
         item.insertAfter('#msg-tmpl');
         item.find('.card-text').text(message.TextMsg);
+        item.find('.MsgID').text(simpleID(message.ID));
         item.find('.Icon').tooltip();
 
         let copyIcon = item.find('.CopyIcon');
@@ -164,6 +176,12 @@ function initData() {
   });
 }
 
+// simpleID 取正常 id 的最后三个字符作为简化 id, 方便人眼辨认。
+function simpleID(id) {
+  let len = id.length;
+  return id.slice(len-3, len);
+}
+
 $('#send-btn').click(sendMsg);
 
 // 发送简短备忘
@@ -183,6 +201,8 @@ function sendMsg(event) {
     }
   });
 }
+
+$('.NavbarBtn').tooltip();
 
 $('#msg-input').focus();
 
