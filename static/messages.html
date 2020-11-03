@@ -65,14 +65,24 @@
         </div>
       </form>
       
-      <!--成功提示-->
-      <div id="success-alert" class="alert alert-success" role="alert" style="display: none;">
+      <!--发送文本的成功提示-->
+      <div id="send-text-success-alert" class="alert alert-success" role="alert" style="display: none;">
         <span class="AlertMessage">OK. Your message was sent successfully.</span>
         <br />
         <a href="#" onclick="window.location.reload()">
           Click here to update the list below.
         </a>
       </div>
+
+      <!--普通成功提示-->
+      <template id="alert-success-tmpl">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="AlertMessage"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+      </template>
 
       <!--错误提示-->
       <template id="alert-danger-tmpl">
@@ -87,22 +97,23 @@
       <div id="all-messages">
         <template id="text-msg-tmpl">
           <div class="card mb-3">
-            <div class="card-body">
+            <div class="card-body d-flex flex-column h-100">
               <h6 class="card-subtitle mb-2 text-muted">id:
                 <span class="MsgID text-uppercase"></span>
               </h6>
               <p class="card-text"></p>
-              <p class="text-right mb-0 IconButtons">
-                <svg class="Icon UpDelete bi bi-trash" title="删除"
-                     data-toggle="tooltip" width="1em" height="1em" 
-                     viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <div class="mt-auto ml-auto IconButtons">
+                <svg class="Icon UpIcon bi bi-arrow-bar-up" title="上升"
+                      data-toggle="tooltip" width="1em" height="1em" 
+                      viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
+                </svg>
+                <svg class="Icon DeleteIcon bi bi-trash" title="删除"
+                      data-toggle="tooltip" width="1em" height="1em" 
+                      viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                   <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                   <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                </svg>
-                <svg class="Icon UpIcon bi bi-arrow-bar-up" title="上升"
-                     data-toggle="tooltip" width="1em" height="1em"
-                     viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5zm-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/>
                 </svg>
                 <svg class="Icon CopyIcon bi bi-files" title="copy"
                      data-toggle="tooltip" width="1em" height="1em" 
@@ -110,7 +121,7 @@
                   <path fill-rule="evenodd" d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z"/>
                   <path d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z"/>
                 </svg>
-              </p>
+              </div>
             </div>
           </div>  
         </template>
@@ -119,7 +130,7 @@
           <div class="card mb-3">
             <div class="row no-gutters">
               <div class="col-3">
-                <img class="card-img">
+                <img class="card-img img-thumbnail">
               </div>
               <div class="col">
                 <div class="card-body d-flex flex-column h-100">
@@ -128,19 +139,20 @@
                   </h6>
                   <p class="card-text"></p>
                   <div class="mt-auto ml-auto IconButtons">
-                    <svg class="Icon UpDelete bi bi-trash" title="删除"
+                    <svg class="Icon UpIcon bi bi-arrow-bar-up" title="上升"
+                          data-toggle="tooltip" width="1em" height="1em" 
+                          viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                      <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
+                    </svg>
+                    <svg class="Icon DeleteIcon bi bi-trash" title="删除"
                           data-toggle="tooltip" width="1em" height="1em" 
                           viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                       <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                       <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                     </svg>
-                    <svg class="Icon UpIcon bi bi-arrow-bar-up" title="上升"
-                          data-toggle="tooltip" width="1em" height="1em"
-                          viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5zm-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/>
-                    </svg>
                     <a class="DownloadButton">
-                      <svg class="Icon UpIcon bi bi-download" title="download" 
+                      <svg class="Icon DownloadIcon bi bi-download" title="download" 
                             data-toggle="tooltip" width="1em" height="1em" 
                             viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" d="M.5 8a.5.5 0 0 1 .5.5V12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5a.5.5 0 0 1 1 0V12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8.5A.5.5 0 0 1 .5 8z"/>
@@ -169,12 +181,12 @@
               </button>
           </div>
           <div class="modal-body">
-              <p>Throw it to the recycle bin?</p>
-              <p>(Title: <span id="title-in-modal"></span>)</p>
+              <p>Delete this message/file?</p>
+              <p>(id: <span id="id-in-modal" class="text-uppercase"></span>)</p>
           </div>
           <div class="modal-footer">
+              <button type="button" class="btn btn-danger" id="yes-button">Yes</button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-              <button type="button" class="btn btn-primary SubmitButton">Yes</button>
           </div>
           </div>
       </div>
@@ -189,7 +201,10 @@ function initData() {
   ajaxGet('/api/all', null, function() {
     if (this.status == 200) {
       this.response.forEach(message => {
+
+        let simple_id = simpleID(message.ID);
         let item;
+
         if (message.Type == 'TextMsg') {
           item = insertTextMsg(message);
         } else if (message.Type == 'FileMsg') {
@@ -199,12 +214,31 @@ function initData() {
         }
 
         // 两种类型的相同操作
-        item.find('.MsgID').text(simpleID(message.ID));
+        item.find('.MsgID').text(simple_id);
         item.find('.Icon').tooltip();
         item.find('.UpIcon').click(() => {
           // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
           item.insertAfter('#file-msg-tmpl');
           $('.UpIcon').tooltip('hide');
+        });
+        item.find('.DeleteIcon').click(() => {
+          $('#delete-dialog').modal('show');
+          $('#id-in-modal').text(simple_id);
+          $('#yes-button').off().click(() => {
+            let form = new FormData();
+            form.append('id', message.ID);
+            ajaxPostWithLoadend(form, '/api/delete', $('#yes-button'), function() {
+              if (this.status == 200) {
+                item.remove();
+                insertSuccessAlert('id: ' + simple_id + ' is deleted');
+              } else {
+                window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
+              }
+            },
+            function() {
+              $('#delete-dialog').modal('hide');
+            });
+          });
         });
       });
     } else {
@@ -272,7 +306,7 @@ function sendMsg(event) {
 
   ajaxPostWithSpinner(form, '/api/add-text-msg', 'send', function() {
     if (this.status == 200) {
-      $('#success-alert').show();
+      $('#send-text-success-alert').show();
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
       insertErrorAlert(errMsg);

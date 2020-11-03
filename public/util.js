@@ -25,6 +25,31 @@ function ajaxPost(form, url, btn, onloadHandler) {
   xhr.send(form);
 }
 
+function ajaxPostWithLoadend(form, url, btn, onload, onloadend) {
+  if (btn) {
+    btn.prop('disabled', true);
+  }
+  let xhr = new XMLHttpRequest();
+
+  xhr.responseType = 'json';
+  xhr.open('POST', url);
+
+  xhr.onerror = function () {
+    window.alert('An error occurred during the transaction');
+  };
+  
+  xhr.onload = onload;
+
+  xhr.addEventListener('loadend', function() {
+    if (btn) {
+      btn.prop('disabled', false);
+    }
+    onloadend();
+  });
+
+  xhr.send(form);
+}
+
 // 向服务器提交表单，在等待过程中名为 button_name 的按钮会隐藏，
 // 同时同名的 spinner 会出现，暗示用户耐心等待，同时避免重复提交。
 function ajaxPostWithSpinner(form, url, button_name, onloadHandler) {
