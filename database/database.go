@@ -2,6 +2,7 @@ package database
 
 import (
 	"log"
+	"sync"
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/go-send/session"
@@ -24,6 +25,7 @@ type DB struct {
 	path string
 	DB   *storm.DB
 	Sess *session.Manager
+	sync.Mutex
 }
 
 // Open .
@@ -106,6 +108,9 @@ func (db *DB) newMessage(msgType model.MsgType) (*Message, error) {
 }
 
 func (db *DB) getNextID() (nextID IncreaseID, err error) {
+	db.Lock()
+	defer db.Unlock()
+
 	currentID, err := db.getCurrentID()
 	if err != nil {
 		return nextID, err

@@ -16,7 +16,21 @@
     <script src="/public/bootstrap.bundle.min.js"></script>
     <script src="/public/util.js"></script>
 
-    <style></style>
+    <style>
+.Icon {
+  color: lightgray;
+  cursor: pointer;
+}
+
+.card:hover .Icon {
+  color: black;
+}
+
+.IconButtons {
+  margin-bottom: -0.75em;
+  margin-right: -0.5em;
+}
+    </style>
 
   </head>
 
@@ -40,7 +54,7 @@
 
       <form id="file-form" style="margin-top: 50px;" autocomplete="off">
 
-        <div class="custom-file" style="margin-bottom: 50px;">
+        <div id="custom-file-input" class="custom-file mb-3">
           <input type="file" class="custom-file-input" id="file-input" multiple>
           <label class="custom-file-label" id="file-input-label" for="file-input">Choose file</label>
         </div>
@@ -75,13 +89,18 @@
           </div>
         </template>
         
-        <div id="hidden-fields" style="display: none;">
+        <div id="hidden-area" class="mb-3" style="display: none;">
           <input type="submit" disabled hidden />
-          <button id="send-btn" type="button" class="btn btn-primary">Send</button>
-          <button id="send-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
-            Send
-            <span class="spinner-border spinner-border-sm" role="status"></span>
-          </button>  
+          <div class="d-flex flex-row  align-items-center">
+            <div>
+              <button id="send-btn" type="button" class="btn btn-primary">Send</button>
+              <button id="send-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
+                Send
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+              </button>  
+            </div>
+            <div class="col" id="files-count"></div>
+          </div>
         </div>
 
       </form>
@@ -91,8 +110,9 @@
           <div class="card mb-3">
             <div class="card-body d-flex flex-column h-100">
               <h6 class="card-subtitle mb-2 text-muted">
-                (<span class="FileSize"></span>)
+                <span class="FileSize"></span>
               </h6>
+              <h6 class="ResultMsg" style="display: none;"></h6>
               <p class="card-text"></p>
               <div class="mt-auto ml-auto IconButtons">
                 <svg class="Icon DeleteIcon bi bi-trash" title="删除"
@@ -115,8 +135,9 @@
               <div class="col">
                 <div class="card-body d-flex flex-column h-100">
                   <h6 class="card-subtitle mb-2 text-muted">
-                    (<span class="FileSize"></span>)
+                    <span class="FileSize"></span>
                   </h6>
+                  <h6 class="ResultMsg" style="display: none;"></h6>
                   <p class="card-text"></p>
                   <div class="mt-auto ml-auto IconButtons">
                     <svg class="Icon DeleteIcon bi bi-trash" title="删除"
@@ -139,16 +160,15 @@
 let files = [];
 let fileSha256;
 
-$('#send-btn').click(checkHashUpload);
+$('#send-btn').click(event => {
+  event.preventDefault();
+  hideForm();
+  files.forEach(file => checkHashUpload(file));
+});
 
 $('#file-input').change(event => {
 
-  // Chrome 取消选择文件也会触发 change 事件, Firefox 无此问题.
-  if (event.target.files.length == 0) {
-    $('#file-input-label').text('Choose file')
-    $('#hidden-fields').hide();
-    return;
-  }
+  $('#hidden-area').show();
 
   for (const file of event.target.files) {
 
@@ -160,6 +180,7 @@ $('#file-input').change(event => {
         continue;
     }
     files.push(file)
+    updateFilesCount(files.length);
 
     let item;
     if (file.type.startsWith('image/')) {
@@ -171,49 +192,95 @@ $('#file-input').change(event => {
       item.insertAfter('#image-msg-tmpl');
     }
 
+    // image-msg 与 file-msg 的共同操作
+    let itemID = ItemID.next();
+    file.itemID = itemID;
+    item.attr('id', itemID);
     item.find('.FileSize').text(fileSizeToString(file.size));
     item.find('.card-text').text(file.name);
+    item.find('.Icon').tooltip();
   }
-
-  // sha256Hex(file).then(hashHex => fileSha256 = hashHex);
-
 });
 
+function updateFilesCount(count) {
+  if (count == 1) {
+    $('#files-count').text('1 file');
+  }
+  if (count > 1) {
+    $('#files-count').text(count + ' files');
+  }
+}
+
 // 检查文件的校验和，如无冲突则上传文件。
-function checkHashUpload(event) {
-  event.preventDefault();
+function checkHashUpload(file) {
+  setCardAlert('info', file.itemID, 'Uploading...');
 
-  let form = new FormData();
-  form.append('hashHex', fileSha256);
+  sha256Hex(file).then(fileSha256 => {
+    let form = new FormData();
+    form.append('hashHex', fileSha256);
 
-  ajaxPost(form, '/api/checksum', $('#upload-btn'), function() {
-    if (this.status == 200) {
-      uploadFile();
-    } else {
-      let errMsg = !this.response ? this.status : this.response.message;
-      insertErrorAlert(errMsg);
-    }
+    ajaxPost(form, '/api/checksum', $('#upload-btn'), function() {
+      if (this.status == 200) {
+        uploadFile(file, fileSha256);
+      } else {
+        let errMsg = !this.response ? this.status : this.response.message;
+        setCardDanger(file.itemID, 'Error: ' + errMsg);
+      }
+    });
   });
 }
 
 // 上传文件
-function uploadFile() {
+function uploadFile(file, fileSha256) {
   let form = new FormData();
-  let file = document.querySelector('#file-input').files[0];
   form.append('file', file);
   form.append('checksum', fileSha256);
-  form.append('filename', $('#file-name').val());
+  form.append('filename', file.name);
   form.append('filesize', file.size);
 
   ajaxPostWithSpinner(form, '/api/upload-file', 'upload', function() {
     if (this.status == 200) {
-      insertSuccessAlert('OK. File Uploaded.');
-      $('#hidden-fields').hide();
+      setCardSuccess(file.itemID, 'OK. File Uploaded.')
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
-      insertErrorAlert(errMsg);
+      setCardDanger(file.itemID, 'Error: ' + errMsg);
     }
   });
+}
+
+function setCardDanger(itemID, msg) {
+  setCardAlert('danger', itemID, msg);
+}
+
+function setCardSuccess(itemID, msg) {
+  setCardAlert('success', itemID, msg);
+}
+
+function setCardAlert(type, itemID, msg) {
+  let cardItem = $('#'+itemID);
+  cardItem.removeClass('border-info');
+  cardItem.addClass('border-' + type);
+  cardItem.find('.IconButtons').hide();
+  cardItem.find('.card-subtitle').hide();
+  cardItem.find('.ResultMsg')
+    .removeClass('text-info')
+    .addClass('text-' + type)
+    .text(msg)
+    .show();
+}
+
+function hideForm() {
+  $('#custom-file-input').hide()
+  $('#hidden-area').hide();
+}
+
+// ItemID.next() 输出自增 id.
+let ItemID = {
+  n: 0,
+  next: function() {
+    this.n++;
+    return 'item-' + this.n;
+  }
 }
 
 $('.NavbarBtn').tooltip();

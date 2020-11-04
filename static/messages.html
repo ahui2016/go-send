@@ -250,6 +250,7 @@ function initData() {
               if (this.status == 200) {
                 item.remove();
                 insertSuccessAlert('id: ' + simple_id + ' is deleted');
+                $('html').animate({scrollTop:0},'50');
               } else {
                 window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
               }
