@@ -33,6 +33,7 @@ func main() {
 	http.HandleFunc("/messages", messagesPage)
 	http.HandleFunc("/api/add-text-msg", setMaxBytes(addTextMsg))
 	http.HandleFunc("/api/all", getAllHandler)
+	http.HandleFunc("/api/delete", deleteHandler)
 
 	addr := "127.0.0.1:80"
 	log.Print(addr)
@@ -123,9 +124,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeFile(message *Message, fileContents []byte) error {
-	file := localFilePath(message.ID)
-	thumb := thumbFilePath(message.ID)
-
+	file, thumb := getFileAndThumb(message.ID)
 	err := ioutil.WriteFile(file, fileContents, 0600)
 	if err != nil {
 		return err
@@ -139,4 +138,23 @@ func writeFile(message *Message, fileContents []byte) error {
 		}
 	}
 	return nil
+}
+
+func getFileAndThumb(id string) (originFile, thumb string) {
+	return localFilePath(id), thumbFilePath(id)
+}
+
+func deleteHandler(w http.ResponseWriter, r *http.Request) {
+	id, ok := goutil.GetID(w, r)
+	if !ok {
+		return
+	}
+	if err := goutil.DeleteFiles(getFileAndThumb(id)); err != nil {
+		// 忽略找不到文件的错误
+		if !strings.Contains(err.Error(), "cannot find") {
+			goutil.JsonMessage(w, err.Error(), 500)
+			return
+		}
+	}
+	goutil.CheckErr(w, db.DB.DeleteStruct(&Message{ID: id}), 500)
 }

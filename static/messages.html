@@ -220,6 +220,7 @@ function initData() {
           // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
           item.insertAfter('#file-msg-tmpl');
           $('.UpIcon').tooltip('hide');
+          $('html').animate({scrollTop:0},'50');
         });
         item.find('.DeleteIcon').click(() => {
           $('#delete-dialog').modal('show');
