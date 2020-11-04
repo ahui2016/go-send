@@ -224,20 +224,17 @@ function readFilePromise(file) {
 }
 
 // 文件未必是图片，因此尝试生成缩略图，如果出错则说明这不是图片。
-async function tryToDrawThumb(file, thumbName) {
-  let canvasName = thumbName + ' canvas'
+async function tryToDrawThumb(file, canvasElem) {
   try {
     let src = await readFilePromise(file);
-    await drawThumb(src, canvasName);
-    $(thumbName).show();
+    await drawThumb(src, canvasElem);
   } catch (e) {
     console.log(e);
-    $(thumbName).hide();
   }
 }
 
 // 生成缩略图并描绘到一个 canvas 里。
-function drawThumb(src, canvasName) {
+function drawThumb(src, canvasElem) {
   return new Promise((resolve, reject) => {
     let img = new Image();
     img.src = src;
@@ -254,11 +251,10 @@ function drawThumb(src, canvasName) {
           sh = sw;
       }
 
-      let thumbCanvas = $(canvasName);
-      thumbCanvas
+      canvasElem
         .attr('width', thumbWidth)
         .attr('height', thumbHeight);
-      let ctx = thumbCanvas[0].getContext('2d'); // thumbCanvas[0] is the raw html-element.
+      let ctx = canvasElem[0].getContext('2d'); // canvasElem[0] is the raw html-element.
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, thumbWidth, thumbHeight);
 
       resolve();

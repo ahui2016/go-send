@@ -139,6 +139,7 @@
                 <div class="card-body d-flex flex-column h-100">
                   <h6 class="card-subtitle mb-2 text-muted">id:
                     <span class="MsgID text-uppercase"></span>
+                    (<span class="FileSize"></span>)
                   </h6>
                   <p class="card-text"></p>
                   <div class="mt-auto ml-auto IconButtons">
@@ -184,8 +185,12 @@
               </button>
           </div>
           <div class="modal-body">
-              <p>Delete this message/file?</p>
-              <p>(id: <span id="id-in-modal" class="text-uppercase"></span>)</p>
+              <p id="confirm-question"></p>
+              <p>
+                id: 
+                <span id="id-in-modal" class="text-uppercase"></span>
+                <span id="filesize-in-modal"></span>
+              </p>
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-danger" id="yes-button">Yes</button>
@@ -228,6 +233,16 @@ function initData() {
         item.find('.DeleteIcon').click(() => {
           $('#delete-dialog').modal('show');
           $('#id-in-modal').text(simple_id);
+
+          if (message.Type == 'TextMsg') {            
+            $('#confirm-question').text('Delete this message?');
+            $('#filesize-in-modal').text('');
+          }
+          if (message.Type == 'FileMsg') {
+            $('#confirm-question').text('Delete this file?');
+            $('#filesize-in-modal').text('('+fileSizeToString(message.FileSize)+')'); 
+          }
+
           $('#yes-button').off().click(() => {
             let form = new FormData();
             form.append('id', message.ID);
@@ -285,6 +300,7 @@ function insertFileMsg(message) {
 
   item.find('.card-text').text(message.FileName);
   item.find('.card-img').attr('src', thumbURL(message.ID));
+  item.find('.FileSize').text(fileSizeToString(message.FileSize));
   item.find('.DownloadButton')
     .attr('href', fileURL(message.ID))
     .attr('download', message.FileName);

@@ -41,13 +41,23 @@
       <form id="file-form" style="margin-top: 50px;" autocomplete="off">
 
         <div class="custom-file" style="margin-bottom: 50px;">
-          <input type="file" class="custom-file-input" id="file-input">
+          <input type="file" class="custom-file-input" id="file-input" multiple>
           <label class="custom-file-label" id="file-input-label" for="file-input">Choose file</label>
         </div>
 
         <!--成功提示-->
         <template id="alert-success-tmpl">
           <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="AlertMessage"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </template>
+
+        <!--普通提示-->
+        <template id="alert-info-tmpl">
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
             <span class="AlertMessage"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
               <span aria-hidden="true">&times;</span>
@@ -66,27 +76,6 @@
         </template>
         
         <div id="hidden-fields" style="display: none;">
-          <div class="form-group row" id="thumbnail" style="display: none;">
-            <label for="file-size" class="col-sm-2 col-form-label">Thumbnail</label>
-            <div class="col-sm-10">
-              <canvas class="img-thumbnail"></canvas>
-            </div>
-          </div>
-
-          <div class="form-group row">
-            <label for="file-size" class="col-sm-2 col-form-label">File Size</label>
-            <div class="col-sm-10">
-              <input type="text" readonly class="form-control-plaintext" id="file-size">
-            </div>
-          </div>
-
-          <div class="form-group row">
-            <label for="file-name" class="col-sm-2 col-form-label">File Name</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="file-name">
-            </div>
-          </div>
-          
           <input type="submit" disabled hidden />
           <button id="send-btn" type="button" class="btn btn-primary">Send</button>
           <button id="send-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
@@ -97,32 +86,97 @@
 
       </form>
       
+      <div id="all-files">
+        <template id="file-msg-tmpl">
+          <div class="card mb-3">
+            <div class="card-body d-flex flex-column h-100">
+              <h6 class="card-subtitle mb-2 text-muted">
+                (<span class="FileSize"></span>)
+              </h6>
+              <p class="card-text"></p>
+              <div class="mt-auto ml-auto IconButtons">
+                <svg class="Icon DeleteIcon bi bi-trash" title="删除"
+                      data-toggle="tooltip" width="1em" height="1em" 
+                      viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                  <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+              </div>
+            </div>
+          </div>  
+        </template>
+
+        <template id="image-msg-tmpl">
+          <div class="card mb-3">
+            <div class="row no-gutters">
+              <div class="col-3">
+                <canvas class="card-img img-thumbnail"></canvas>
+              </div>
+              <div class="col">
+                <div class="card-body d-flex flex-column h-100">
+                  <h6 class="card-subtitle mb-2 text-muted">
+                    (<span class="FileSize"></span>)
+                  </h6>
+                  <p class="card-text"></p>
+                  <div class="mt-auto ml-auto IconButtons">
+                    <svg class="Icon DeleteIcon bi bi-trash" title="删除"
+                          data-toggle="tooltip" width="1em" height="1em" 
+                          viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>  
+        </template>
+      </div>
+
     <script>
     // 如果有些函数在这里找不到，那就是在 util.js 里。
 
-let newTags = [];
+let files = [];
 let fileSha256;
 
 $('#send-btn').click(checkHashUpload);
 
 $('#file-input').change(event => {
-  let file = event.target.files[0];
 
   // Chrome 取消选择文件也会触发 change 事件, Firefox 无此问题.
-  if (!file) {
+  if (event.target.files.length == 0) {
     $('#file-input-label').text('Choose file')
     $('#hidden-fields').hide();
-  } else {
-    $('#hidden-fields').show();
-    $('#file-input-label').text(file.name);
-
-    tryToDrawThumb(file, '#thumbnail');
-    sha256Hex(file).then(hashHex => fileSha256 = hashHex);
-
-    $('#file-size').val(fileSizeToString(file.size));
-    $('#file-name').val(file.name).focus();
+    return;
   }
-  $('.alert-dismissible').alert('close');
+
+  for (const file of event.target.files) {
+
+    const sameFile = a => a.name === file.name;
+
+    let i = files.findIndex(sameFile);
+    if (i > -1) {
+        insertInfoAlert(`已忽略重复文件: ${file.name}`);
+        continue;
+    }
+    files.push(file)
+
+    let item;
+    if (file.type.startsWith('image/')) {
+      item = $('#image-msg-tmpl').contents().clone();
+      item.insertAfter('#image-msg-tmpl');
+      tryToDrawThumb(file, item.find('.card-img'));
+    } else {
+      item = $('#file-msg-tmpl').contents().clone();
+      item.insertAfter('#image-msg-tmpl');
+    }
+
+    item.find('.FileSize').text(fileSizeToString(file.size));
+    item.find('.card-text').text(file.name);
+  }
+
+  // sha256Hex(file).then(hashHex => fileSha256 = hashHex);
+
 });
 
 // 检查文件的校验和，如无冲突则上传文件。
