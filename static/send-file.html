@@ -23,7 +23,19 @@
   <body>
     <div class="container" style="max-width: 680px; min-width: 400px;">
       <nav class="navbar navbar-light bg-light mt-1">
-          <span class="navbar-brand mb-0 h1">Send File</span>
+        <span class="navbar-brand mb-0 h1">Send File</span>
+        <div class="btn-toolbar" role="toolbar" aria-label="nav bar">
+          <div class="btn-group mr-2" role="group">
+              <a role="button" class="btn btn-outline-dark NavbarBtn" 
+                  href="/home" data-toggle="tooltip" title="index">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-list-task" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5H2zM3 3H2v1h1V3z"/>
+                  <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9z"/>
+                  <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V7zM2 7h1v1H2V7zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H2zm1 .5H2v1h1v-1z"/>
+                </svg>
+              </a>
+          </div>
+        </div>  
       </nav>
 
       <form id="file-form" style="margin-top: 50px;" autocomplete="off">
@@ -87,70 +99,72 @@
       
     <script>
     // 如果有些函数在这里找不到，那就是在 util.js 里。
-  
-  let newTags = [];
-  let fileSha256;
-  
-  $('#send-btn').click(checkHashUpload);
-  
-  $('#file-input').change(event => {
-    let file = event.target.files[0];
-  
-    // Chrome 取消选择文件也会触发 change 事件, Firefox 无此问题.
-    if (!file) {
-      $('#file-input-label').text('Choose file')
+
+let newTags = [];
+let fileSha256;
+
+$('#send-btn').click(checkHashUpload);
+
+$('#file-input').change(event => {
+  let file = event.target.files[0];
+
+  // Chrome 取消选择文件也会触发 change 事件, Firefox 无此问题.
+  if (!file) {
+    $('#file-input-label').text('Choose file')
+    $('#hidden-fields').hide();
+  } else {
+    $('#hidden-fields').show();
+    $('#file-input-label').text(file.name);
+
+    tryToDrawThumb(file, '#thumbnail');
+    sha256Hex(file).then(hashHex => fileSha256 = hashHex);
+
+    $('#file-size').val(fileSizeToString(file.size));
+    $('#file-name').val(file.name).focus();
+  }
+  $('.alert-dismissible').alert('close');
+});
+
+// 检查文件的校验和，如无冲突则上传文件。
+function checkHashUpload(event) {
+  event.preventDefault();
+
+  let form = new FormData();
+  form.append('hashHex', fileSha256);
+
+  ajaxPost(form, '/api/checksum', $('#upload-btn'), function() {
+    if (this.status == 200) {
+      uploadFile();
+    } else {
+      let errMsg = !this.response ? this.status : this.response.message;
+      insertErrorAlert(errMsg);
+    }
+  });
+}
+
+// 上传文件
+function uploadFile() {
+  let form = new FormData();
+  let file = document.querySelector('#file-input').files[0];
+  form.append('file', file);
+  form.append('checksum', fileSha256);
+  form.append('filename', $('#file-name').val());
+  form.append('filesize', file.size);
+
+  ajaxPostWithSpinner(form, '/api/upload-file', 'upload', function() {
+    if (this.status == 200) {
+      insertSuccessAlert('OK. File Uploaded.');
       $('#hidden-fields').hide();
     } else {
-      $('#hidden-fields').show();
-      $('#file-input-label').text(file.name);
-  
-      tryToDrawThumb(file, '#thumbnail');
-      sha256Hex(file).then(hashHex => fileSha256 = hashHex);
-  
-      $('#file-size').val(fileSizeToString(file.size));
-      $('#file-name').val(file.name).focus();
+      let errMsg = !this.response ? this.status : this.response.message;
+      insertErrorAlert(errMsg);
     }
-    $('.alert-dismissible').alert('close');
   });
-  
-  // 检查文件的校验和，如无冲突则上传文件。
-  function checkHashUpload(event) {
-    event.preventDefault();
-  
-    let form = new FormData();
-    form.append('hashHex', fileSha256);
-  
-    ajaxPost(form, '/api/checksum', $('#upload-btn'), function() {
-      if (this.status == 200) {
-        uploadFile();
-      } else {
-        let errMsg = !this.response ? this.status : this.response.message;
-        insertErrorAlert(errMsg);
-      }
-    });
-  }
-  
-  // 上传文件
-  function uploadFile() {
-    let form = new FormData();
-    let file = document.querySelector('#file-input').files[0];
-    form.append('file', file);
-    form.append('checksum', fileSha256);
-    form.append('filename', $('#file-name').val());
-    form.append('filesize', file.size);
-  
-    ajaxPostWithSpinner(form, '/api/upload-file', 'upload', function() {
-      if (this.status == 200) {
-        insertSuccessAlert('OK. File Uploaded.');
-        $('#hidden-fields').hide();
-      } else {
-        let errMsg = !this.response ? this.status : this.response.message;
-        insertErrorAlert(errMsg);
-      }
-    });
-  }
-  
-  $('#file-input').focus();
+}
+
+$('.NavbarBtn').tooltip();
+
+$('#file-input').focus();
 
       </script>
     </body>
