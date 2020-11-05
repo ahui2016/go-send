@@ -4,7 +4,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ahui2016/go-send/database"
 	"github.com/ahui2016/goutil"
@@ -61,6 +63,16 @@ func userHomeDir() string {
 
 func localFilePath(id string) string {
 	return filepath.Join(filesDir, id+gosendFileExt)
+}
+
+func newZipFilePath() string {
+	return filepath.Join(filesDir, TimestampFilename(".zip"))
+}
+
+// TimestampFilename .
+func TimestampFilename(ext string) string {
+	name := strconv.FormatInt(time.Now().UnixNano(), 10)
+	return name + ext
 }
 
 func thumbFilePath(id string) string {

@@ -88,6 +88,16 @@ func (db *DB) NewTextMsg(textMsg string) (*Message, error) {
 	return message, nil
 }
 
+// NewZipMsg 用于自动打包，具有特殊的文件类型，避免重复打包。
+func (db *DB) NewZipMsg(filename string) (*Message, error) {
+	message, err := db.NewFileMsg(filename)
+	if err != nil {
+		return nil, err
+	}
+	message.FileType = model.GosendZip
+	return message, nil
+}
+
 // NewFileMsg .
 func (db *DB) NewFileMsg(filename string) (*Message, error) {
 	message, err := db.newMessage(model.FileMsg)
@@ -124,11 +134,24 @@ func (db *DB) getNextID() (nextID IncreaseID, err error) {
 
 // Insert .
 func (db *DB) Insert(message *Message) error {
-	return db.DB.Save(message)
+	return db.Save(message)
+}
+
+// Save wraps storm.DB.Save with a lock.
+func (db *DB) Save(data interface{}) error {
+	db.Lock()
+	defer db.Unlock()
+	return db.DB.Save(data)
 }
 
 // AllByUpdatedAt .
 func (db *DB) AllByUpdatedAt() (all []Message, err error) {
 	err = db.DB.AllByIndex("UpdatedAt", &all)
+	return
+}
+
+// AllFiles finds all files(Type = FileMsg).
+func (db *DB) AllFiles() (files []Message, err error) {
+	err = db.DB.Find("Type", model.FileMsg, &files)
 	return
 }

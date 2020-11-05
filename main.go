@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ahui2016/go-send/model"
+	"github.com/ahui2016/go-send/zipper"
 	"github.com/ahui2016/goutil"
 )
 
@@ -34,6 +35,8 @@ func main() {
 	http.HandleFunc("/api/add-text-msg", setMaxBytes(addTextMsg))
 	http.HandleFunc("/api/all", getAllHandler)
 	http.HandleFunc("/api/delete", deleteHandler)
+
+	http.HandleFunc("/api/zip-all-files", zipAllHandler)
 
 	addr := "127.0.0.1:80"
 	log.Print(addr)
@@ -157,4 +160,42 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	goutil.CheckErr(w, db.DB.DeleteStruct(&Message{ID: id}), 500)
+}
+
+func zipAllHandler(w http.ResponseWriter, r *http.Request) {
+	goutil.CheckErr(w, zipAllFiles(), 500)
+}
+
+// zipAllFiles 把全部文件打包，打包后的文件将会在列表中显示，因此用户可以下载和删除。
+// zipAllFiles 会自动剔除使用 zipAllFiles 等函数打包的文件，避免重复打包。
+func zipAllFiles() error {
+	message, err := db.NewZipMsg("gosend_all_files.zip")
+	if err != nil {
+		return err
+	}
+	allFiles, err := db.AllFiles()
+	if err != nil {
+		return err
+	}
+	err = zipper.Create(localFilePath(message.ID), zipperFiles(allFiles))
+	if err != nil {
+		return err
+	}
+	return db.Save(message)
+}
+
+// zipperFiles 会自动剔除使用 GosendZip, 避免重复打包。
+func zipperFiles(fileMessages []Message) (files []zipper.File) {
+	for i := range fileMessages {
+		message := fileMessages[i]
+		if message.FileType == model.GosendZip {
+			continue
+		}
+		file := zipper.File{
+			Name: message.FileName,
+			Path: localFilePath(message.ID),
+		}
+		files = append(files, file)
+	}
+	return
 }

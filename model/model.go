@@ -18,8 +18,16 @@ const (
 type MsgType string
 
 const (
+	// TextMsg 是文本信息，不带文件。
 	TextMsg MsgType = "TextMsg"
+
+	// FileMsg 是文件信息，带有文件。
 	FileMsg MsgType = "FileMsg"
+)
+
+const (
+	// GosendZip 是自定义的文件类型，表示自动打包的文件，避免重复打包。
+	GosendZip = "gosend/zip"
 )
 
 // Message 表示一个数据表。
