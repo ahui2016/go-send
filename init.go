@@ -4,9 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ahui2016/go-send/database"
 	"github.com/ahui2016/goutil"
@@ -65,18 +63,12 @@ func localFilePath(id string) string {
 	return filepath.Join(filesDir, id+gosendFileExt)
 }
 
-func newZipFilePath() string {
-	return filepath.Join(filesDir, TimestampFilename(".zip"))
-}
-
-// TimestampFilename .
-func TimestampFilename(ext string) string {
-	name := strconv.FormatInt(time.Now().UnixNano(), 10)
-	return name + ext
-}
-
 func thumbFilePath(id string) string {
 	return filepath.Join(filesDir, id+thumbFileExt)
+}
+
+func getFileAndThumb(id string) (originFile, thumb string) {
+	return localFilePath(id), thumbFilePath(id)
 }
 
 // fillHTML 把读取 html 文件的内容，塞进 HTML (map[string]string)。

@@ -7,6 +7,7 @@ import (
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/go-send/session"
 	"github.com/asdine/storm/v3"
+	"github.com/asdine/storm/v3/q"
 )
 
 // 用来保存当前最新 id.
@@ -154,4 +155,9 @@ func (db *DB) AllByUpdatedAt() (all []Message, err error) {
 func (db *DB) AllFiles() (files []Message, err error) {
 	err = db.DB.Find("Type", model.FileMsg, &files)
 	return
+}
+
+// DeleteAllFiles .
+func (db *DB) DeleteAllFiles() error {
+	return db.DB.Select(q.Eq("Type", model.FileMsg)).Delete(new(Message))
 }

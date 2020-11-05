@@ -5,11 +5,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/ahui2016/go-send/model"
-	"github.com/ahui2016/go-send/zipper"
 	"github.com/ahui2016/goutil"
+	"github.com/ahui2016/goutil/zipper"
 )
 
 type (
@@ -37,6 +38,7 @@ func main() {
 	http.HandleFunc("/api/delete", deleteHandler)
 
 	http.HandleFunc("/api/zip-all-files", zipAllHandler)
+	http.HandleFunc("/api/delete-all-files", deleteAllHandler)
 
 	addr := "127.0.0.1:80"
 	log.Print(addr)
@@ -143,21 +145,14 @@ func writeFile(message *Message, fileContents []byte) error {
 	return nil
 }
 
-func getFileAndThumb(id string) (originFile, thumb string) {
-	return localFilePath(id), thumbFilePath(id)
-}
-
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	id, ok := goutil.GetID(w, r)
 	if !ok {
 		return
 	}
-	if err := goutil.DeleteFiles(getFileAndThumb(id)); err != nil {
-		// 忽略找不到文件的错误
-		if !strings.Contains(err.Error(), "cannot find") {
-			goutil.JsonMessage(w, err.Error(), 500)
-			return
-		}
+	err := goutil.DeleteFiles(getFileAndThumb(id))
+	if goutil.CheckErr(w, err, 500) {
+		return
 	}
 	goutil.CheckErr(w, db.DB.DeleteStruct(&Message{ID: id}), 500)
 }
@@ -177,10 +172,16 @@ func zipAllFiles() error {
 	if err != nil {
 		return err
 	}
-	err = zipper.Create(localFilePath(message.ID), zipperFiles(allFiles))
+	zipFilePath := localFilePath(message.ID)
+	err = zipper.Create(zipFilePath, zipperFiles(allFiles))
 	if err != nil {
 		return err
 	}
+	stat, err := os.Lstat(zipFilePath)
+	if err != nil {
+		return err
+	}
+	message.FileSize = stat.Size()
 	return db.Save(message)
 }
 
@@ -198,4 +199,20 @@ func zipperFiles(fileMessages []Message) (files []zipper.File) {
 		files = append(files, file)
 	}
 	return
+}
+
+func deleteAllHandler(w http.ResponseWriter, r *http.Request) {
+	allFiles, err := db.AllFiles()
+	if goutil.CheckErr(w, err, 500) {
+		return
+	}
+	var filePaths []string
+	for _, file := range allFiles {
+		originFile, thumb := getFileAndThumb(file.ID)
+		filePaths = append(filePaths, originFile, thumb)
+	}
+	if goutil.CheckErr(w, goutil.DeleteFiles(filePaths...), 500) {
+		return
+	}
+	goutil.CheckErr(w, db.DeleteAllFiles(), 500)
 }
