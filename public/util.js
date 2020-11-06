@@ -1,31 +1,7 @@
 const thumbWidth = 128, thumbHeight = 128;
 
 // 向服务器提交表单，在等待过程中 btn 会失效，避免重复提交。
-function ajaxPost(form, url, btn, onloadHandler) {
-  if (btn) {
-    btn.prop('disabled', true);
-  }
-  let xhr = new XMLHttpRequest();
-
-  xhr.responseType = 'json';
-  xhr.open('POST', url);
-
-  xhr.onerror = function () {
-    window.alert('An error occurred during the transaction');
-  };
-  
-  xhr.onload = onloadHandler;
-
-  xhr.addEventListener('loadend', function() {
-    if (btn) {
-      btn.prop('disabled', false);
-    }
-  });
-
-  xhr.send(form);
-}
-
-function ajaxPostWithLoadend(form, url, btn, onload, onloadend) {
+function ajaxPost(form, url, btn, onload, onloadend) {
   if (btn) {
     btn.prop('disabled', true);
   }
@@ -44,7 +20,7 @@ function ajaxPostWithLoadend(form, url, btn, onload, onloadend) {
     if (btn) {
       btn.prop('disabled', false);
     }
-    onloadend();
+    if (onloadend) onloadend();
   });
 
   xhr.send(form);
@@ -52,7 +28,7 @@ function ajaxPostWithLoadend(form, url, btn, onload, onloadend) {
 
 // 向服务器提交表单，在等待过程中名为 button_name 的按钮会隐藏，
 // 同时同名的 spinner 会出现，暗示用户耐心等待，同时避免重复提交。
-function ajaxPostWithSpinner(form, url, button_name, onloadHandler) {
+function ajaxPostWithSpinner(form, url, button_name, onload, onloadend) {
   if (button_name) {
     $(`#${button_name}-btn`).hide();
     $(`#${button_name}-spinner`).show();
@@ -70,8 +46,9 @@ function ajaxPostWithSpinner(form, url, button_name, onloadHandler) {
       $(`#${button_name}-btn`).show();
       $(`#${button_name}-spinner`).hide();
     }
+    if (onloadend) onloadend();
   });
-  xhr.onload = onloadHandler;
+  xhr.onload = onload;
   xhr.send(form);
 }
 
@@ -112,19 +89,21 @@ function insertErrorAlert(errMsg, alertTmpl) {
 }
 
 // 插入普通提示
-function insertInfoAlert(msg) {
+function insertInfoAlert(msg, where) {
   console.log(msg);
   let errAlert = $('#alert-info-tmpl').contents().clone();
   errAlert.find('.AlertMessage').text(msg);
-  errAlert.insertAfter('#alert-info-tmpl');
+  if (!where) where = '#alert-info-tmpl';
+  errAlert.insertAfter(where);
 }
 
 // 插入成功提示
-function insertSuccessAlert(msg) {
+function insertSuccessAlert(msg, where) {
   console.log(msg);
   let errAlert = $('#alert-success-tmpl').contents().clone();
   errAlert.find('.AlertMessage').text(msg);
-  errAlert.insertAfter('#alert-success-tmpl');
+  if (!where) where = '#alert-success-tmpl';
+  errAlert.insertAfter(where);
 }
 
 // 把文件大小换算为 KB 或 MB
@@ -228,8 +207,8 @@ function readFilePromise(file) {
 async function tryToDrawThumb(file, canvasElem, imgElem) {
   try {
     let src = await readFilePromise(file);
-    await drawThumb(src, canvasElem);
-    canvasToImg(canvasElem[0], imgElem[0]);
+    await drawThumb(src, canvasElem, imgElem);
+    // canvasToImg(canvasElem[0], imgElem[0]);
   } catch (e) {
     console.log(e);
   }
@@ -247,7 +226,7 @@ function canvasToImg(canvas, img) {
 }
 
 // 生成缩略图并描绘到一个 canvas 里。
-function drawThumb(src, canvasElem) {
+function drawThumb(src, canvasElem, imgElem) {
   return new Promise((resolve, reject) => {
     let img = new Image();
     img.src = src;
@@ -270,6 +249,7 @@ function drawThumb(src, canvasElem) {
       let ctx = canvasElem[0].getContext('2d'); // canvasElem[0] is the raw html-element.
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, thumbWidth, thumbHeight);
 
+      imgElem[0].src = canvasElem[0].toDataURL();
       resolve();
     };
     img.onerror = reject;
@@ -297,3 +277,12 @@ function moveBoxToTop(box_id, tail) {
   head.push(...tail);
   return head;
 }
+
+// ItemID.next() 输出自增 id.
+let ItemID = {
+  n: 0,
+  next: function() {
+    this.n++;
+    return 'item-' + this.n;
+  }
+};
