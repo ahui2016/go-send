@@ -70,20 +70,30 @@
       
       <!--发送文本的成功提示-->
       <div id="send-text-success-alert" class="alert alert-success" role="alert" style="display: none;">
-        <span class="AlertMessage">OK. Your message was sent successfully.</span>
+        <span class="AlertMessage">OK. Your message is sent successfully.</span>
         <br />
         <a href="#" onclick="window.location.reload()">
           Click here to update the list below.
         </a>
       </div>
 
-      <!--普通成功提示-->
+      <!--成功提示-->
       <template id="alert-success-tmpl">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="AlertMessage"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
+        </div>
+      </template>
+
+      <!--普通提示-->
+      <template id="alert-info-tmpl">
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+          <span class="AlertMessage"></span>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
       </template>
 
@@ -254,8 +264,10 @@ function initData() {
             ajaxPost(form, '/api/delete', $('#yes-button'), function() {
               if (this.status == 200) {
                 let infoMsg = 'id: ' + simple_id + ' is deleted';
-                insertInfoAlert(infoMsg, '#'+itemID);
-                item.remove();
+                item.hide('slow', function() {
+                  insertInfoAlert(infoMsg, '#'+itemID);
+                  item.remove();
+                });
               } else {
                 window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
               }

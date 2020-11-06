@@ -165,13 +165,15 @@ let files = [];
 $('#send-btn').click(event => {
   event.preventDefault();
   hideForm();
-  // files.forEach(file => checkHashUpload(file));
   files.forEach(file => setCardAlert('info', file.itemID, 'Waiting...'));
   uploadOneByOne(files.length);
 });
 
 function uploadOneByOne(i) {
-  if (i <= 0) return;
+  if (i <= 0) {
+    insertInfoAlert('上传结束，如果如下所示。');
+    return;
+  }
   i--;
   checkHashUpload(i);
 }
@@ -209,6 +211,15 @@ $('#file-input').change(event => {
     item.find('.FileSize').text(fileSizeToString(file.size));
     item.find('.card-text').text(file.name);
     item.find('.Icon').tooltip();
+
+    let deleteIcon = item.find('.DeleteIcon');
+    deleteIcon.click(() => {
+      let i = files.findIndex(sameFile);
+      files.splice(i, 1);
+      updateFilesCount(files.length);
+      deleteIcon.tooltip('dispose');
+      item.hide('slow', function(){ item.remove() });
+    });
   }
 });
 
