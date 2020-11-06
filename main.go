@@ -29,18 +29,19 @@ func main() {
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/login", loginPage)
+	http.HandleFunc("/api/login", loginHandler)
 
-	http.HandleFunc("/send-file", addFilePage)
-	http.HandleFunc("/api/checksum", checksumHandler)
-	http.HandleFunc("/api/upload-file", setMaxBytes(uploadHandler))
+	http.HandleFunc("/send-file", checkLogin(addFilePage))
+	http.HandleFunc("/api/checksum", checkLogin(checksumHandler))
+	http.HandleFunc("/api/upload-file", checkLogin(setMaxBytes(uploadHandler)))
 
-	http.HandleFunc("/messages", messagesPage)
-	http.HandleFunc("/api/add-text-msg", setMaxBytes(addTextMsg))
-	http.HandleFunc("/api/all", getAllHandler)
-	http.HandleFunc("/api/delete", deleteHandler)
+	http.HandleFunc("/messages", checkLogin(messagesPage))
+	http.HandleFunc("/api/add-text-msg", checkLogin(setMaxBytes(addTextMsg)))
+	http.HandleFunc("/api/all", checkLogin(getAllHandler))
+	http.HandleFunc("/api/delete", checkLogin(deleteHandler))
 
-	http.HandleFunc("/api/zip-all-files", zipAllHandler)
-	http.HandleFunc("/api/delete-all-files", deleteAllHandler)
+	http.HandleFunc("/api/zip-all-files", checkLogin(zipAllHandler))
+	http.HandleFunc("/api/delete-all-files", checkLogin(deleteAllHandler))
 
 	addr := "127.0.0.1:80"
 	log.Print(addr)
@@ -221,4 +222,24 @@ func deleteAllHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	goutil.CheckErr(w, db.DeleteAllFiles(), 500)
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if isLoggedIn(r) {
+		goutil.JsonMessage(w, "Already logged in.", 400)
+		return
+	}
+
+	password := r.FormValue("password")
+	if password != defaultPassword {
+		passwordTry++
+		if checkPasswordTry(w) {
+			return
+		}
+		goutil.JsonMessage(w, "Wrong Password", 400)
+		return
+	}
+
+	passwordTry = 0
+	db.Sess.Add(w, goutil.NewID())
 }

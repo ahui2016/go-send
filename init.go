@@ -16,7 +16,8 @@ const (
 	gosendFileExt    = ".send"
 	thumbFileExt     = ".small"
 	staticFolder     = "static"
-	password         = "abc"
+	defaultPassword  = "abc"
+	passwordMaxTry   = 5
 
 	// 99 days, for session
 	maxAge = 60 * 60 * 24 * 99
@@ -32,8 +33,9 @@ var (
 )
 
 var (
-	HTML = make(map[string]string)
-	db   = new(database.DB)
+	passwordTry = 0
+	HTML        = make(map[string]string)
+	db          = new(database.DB)
 )
 
 func init() {
