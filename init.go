@@ -22,7 +22,7 @@ const (
 	maxAge = 60 * 60 * 24 * 99
 
 	// 3 MB, for http.MaxBytesReader
-	maxBytes int64 = 1024 * 1024 * 3
+	maxBytes int64 = 1024 * 1024 * 10
 )
 
 var (

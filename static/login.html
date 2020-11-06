@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/public/bootstrap.min.css">
+
+    <title>Login .. go-send</title>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="/public/jquery-3.5.1.min.js"></script>
+    <script src="/public/bootstrap.bundle.min.js"></script>
+    <script src="/public/util.js"></script>
+
+    <style></style>
+
+  </head>
+
+  <body>
+    <div class="container" style="width: 400px; margin-top: 30px;">
+
+      <div class="display-4 text-center">go-send</div>
+
+      <div class="text-center" style="margin: 30px 0 30px 0;">
+        <svg width="10em" height="10em" viewBox="0 0 16 16" class="bi bi-briefcase" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M0 12.5A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-6h-1v6a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-6H0v6z"/>
+          <path fill-rule="evenodd" d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5v2.384l-7.614 2.03a1.5 1.5 0 0 1-.772 0L0 6.884V4.5zM1.5 4a.5.5 0 0 0-.5.5v1.616l6.871 1.832a.5.5 0 0 0 .258 0L15 6.116V4.5a.5.5 0 0 0-.5-.5h-13zM5 2.5A1.5 1.5 0 0 1 6.5 1h3A1.5 1.5 0 0 1 11 2.5V3h-1v-.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5V3H5v-.5z"/>
+        </svg>
+      </div>
+
+      <div class="text-center" style="margin-bottom: 3rem;" >
+        <p>快捷备忘 ・ 文件互传</p>
+      </div>
+
+      <!--错误提示-->
+      <template id="alert-danger-tmpl">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <span class="AlertMessage"></span>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </template>
+
+      <form id="the-form" autocomplete="off">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <button id="login-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
+              login
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+            </button>
+            <!-- 这里要加 .rounded-left, 因为默认只有第一个按钮才有圆边。 -->
+            <button id="login-btn" 
+              class="btn btn-outline-primary rounded-left">login</button>
+          </div>
+          <input type="password" id="password" class="form-control"
+                  autofocus required>
+        </div>
+      </form>
+    </div> 
+    
+    <script>
+      // 如果有些函数在这里找不到，那就是在 util.js 里。
+
+$('#login-btn').click(event => {
+  event.preventDefault();
+
+  let form = new FormData();
+  form.append('password', $('#password').val());
+  
+  ajaxPostWithSpinner(form, '/api/login', 'login', function() {
+    if (this.status == 200) {
+      window.location = '/home';
+    } else {
+      let errMsg = !this.response ? this.status : this.response.message;
+      insertErrorAlert(errMsg);
+    }
+  });
+});
+
+    </script>     
+  </body>
+</html>

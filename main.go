@@ -14,6 +14,7 @@ import (
 )
 
 type (
+	// Message .
 	Message = model.Message
 )
 
@@ -27,6 +28,7 @@ func main() {
 	http.Handle("/files/", http.StripPrefix("/files/", filesFS))
 
 	http.HandleFunc("/", homePage)
+	http.HandleFunc("/login", loginPage)
 
 	http.HandleFunc("/send-file", addFilePage)
 	http.HandleFunc("/api/checksum", checksumHandler)
@@ -54,6 +56,10 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func loginPage(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, HTML["login"])
 }
 
 func addFilePage(w http.ResponseWriter, r *http.Request) {
