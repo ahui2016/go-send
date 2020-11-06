@@ -25,7 +25,8 @@ func main() {
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
 
 	filesFS := http.FileServer(http.Dir(filesDir))
-	http.Handle("/files/", http.StripPrefix("/files/", filesFS))
+	filesFS = http.StripPrefix("/files/", filesFS)
+	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/login", loginPage)
@@ -40,8 +41,7 @@ func main() {
 	http.HandleFunc("/api/all", checkLogin(getAllHandler))
 	http.HandleFunc("/api/delete", checkLogin(deleteHandler))
 
-	http.HandleFunc("/api/zip-all-files", checkLogin(zipAllHandler))
-	http.HandleFunc("/api/delete-all-files", checkLogin(deleteAllHandler))
+	http.HandleFunc("/api/execute-command", checkLogin(executeCommand))
 
 	addr := "127.0.0.1:80"
 	log.Print(addr)
@@ -164,14 +164,25 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	goutil.CheckErr(w, db.DB.DeleteStruct(&Message{ID: id}), 500)
 }
 
-func zipAllHandler(w http.ResponseWriter, r *http.Request) {
-	goutil.CheckErr(w, zipAllFiles(), 500)
+func executeCommand(w http.ResponseWriter, r *http.Request) {
+	switch command := r.FormValue("command"); command {
+	case "zip-all-files":
+		if goutil.CheckErr(w, zipAllFiles(), 500) {
+			return
+		}
+	case "delete-all-files":
+		if goutil.CheckErr(w, deleteAllFiles(), 500) {
+			return
+		}
+	default:
+		goutil.JsonMessage(w, "unknown command", 400)
+	}
 }
 
 // zipAllFiles 把全部文件打包，打包后的文件将会在列表中显示，因此用户可以下载和删除。
 // zipAllFiles 会自动剔除使用 zipAllFiles 等函数打包的文件，避免重复打包。
 func zipAllFiles() error {
-	message, err := db.NewZipMsg("gosend_all_files.zip")
+	message, err := db.NewZipMsg("gosend_all_files")
 	if err != nil {
 		return err
 	}
@@ -208,20 +219,20 @@ func zipperFiles(fileMessages []Message) (files []zipper.File) {
 	return
 }
 
-func deleteAllHandler(w http.ResponseWriter, r *http.Request) {
+func deleteAllFiles() error {
 	allFiles, err := db.AllFiles()
-	if goutil.CheckErr(w, err, 500) {
-		return
+	if err != nil {
+		return err
 	}
 	var filePaths []string
 	for _, file := range allFiles {
 		originFile, thumb := getFileAndThumb(file.ID)
 		filePaths = append(filePaths, originFile, thumb)
 	}
-	if goutil.CheckErr(w, goutil.DeleteFiles(filePaths...), 500) {
-		return
+	if err := goutil.DeleteFiles(filePaths...); err != nil {
+		return err
 	}
-	goutil.CheckErr(w, db.DeleteAllFiles(), 500)
+	return db.DeleteAllFiles()
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {

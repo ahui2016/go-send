@@ -90,11 +90,13 @@ func (db *DB) NewTextMsg(textMsg string) (*Message, error) {
 }
 
 // NewZipMsg 用于自动打包，具有特殊的文件类型，避免重复打包。
+// 注意在该函数里对文件名进行了特殊处理。
 func (db *DB) NewZipMsg(filename string) (*Message, error) {
 	message, err := db.NewFileMsg(filename)
 	if err != nil {
 		return nil, err
 	}
+	message.FileName = filename + "_" + message.ID + ".zip"
 	message.FileType = model.GosendZip
 	return message, nil
 }

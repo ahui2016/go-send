@@ -16,6 +16,21 @@ func setMaxBytes(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func checkLoginForFileServer(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if passwordTry >= passwordMaxTry {
+			db.Close()
+			http.NotFound(w, r)
+			return
+		}
+		if isLoggedOut(r) {
+			http.NotFound(w, r)
+			return
+		}
+		h.ServeHTTP(w, r)
+	}
+}
+
 func checkLogin(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if isLoggedOut(r) {
