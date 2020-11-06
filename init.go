@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -38,7 +37,7 @@ var (
 )
 
 func init() {
-	dataDir = filepath.Join(userHomeDir(), dataFolderName)
+	dataDir = filepath.Join(goutil.UserHomeDir(), dataFolderName)
 	filesDir = filepath.Join(dataDir, filesFolderName)
 	dbPath = filepath.Join(dataDir, databaseFileName)
 	fillHTML()
@@ -49,14 +48,6 @@ func init() {
 	if err := db.Open(maxAge, dbPath); err != nil {
 		panic(err)
 	}
-}
-
-func userHomeDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-	return homeDir
 }
 
 func localFilePath(id string) string {

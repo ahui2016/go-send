@@ -167,6 +167,7 @@ function checkHashHex(hashHex) {
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+// In Chrome 60, they added a feature that disables crypto.subtle for non-TLS connections.
 async function sha256Hex(file) {
   let buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
@@ -224,13 +225,25 @@ function readFilePromise(file) {
 }
 
 // 文件未必是图片，因此尝试生成缩略图，如果出错则说明这不是图片。
-async function tryToDrawThumb(file, canvasElem) {
+async function tryToDrawThumb(file, canvasElem, imgElem) {
   try {
     let src = await readFilePromise(file);
     await drawThumb(src, canvasElem);
+    canvasToImg(canvasElem[0], imgElem[0]);
   } catch (e) {
     console.log(e);
   }
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
+function canvasToImg(canvas, img) {
+  canvas.toBlob(blob => {
+    let url = URL.createObjectURL(blob);
+    img.onload = function() {
+      URL.revokeObjectURL(url);
+    }
+    img.src = url;
+  });
 }
 
 // 生成缩略图并描绘到一个 canvas 里。
