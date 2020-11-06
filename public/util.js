@@ -53,7 +53,7 @@ function ajaxPostWithSpinner(form, url, button_name, onload, onloadend) {
 }
 
 // 从服务器获取数据。
-function ajaxGet(url, btn, onloadHandler) {
+function ajaxGet(url, btn, onload, onloadend) {
   if (btn) {
     btn.prop('disabled', true);
   }
@@ -66,44 +66,40 @@ function ajaxGet(url, btn, onloadHandler) {
     window.alert('An error occurred during the transaction');
   }
   
-  xhr.onload = onloadHandler;
+  xhr.onload = onload;
 
   xhr.addEventListener('loadend', function() {
     if (btn) {
       btn.prop('disabled', false);
     }
+    if (onloadend) onloadend();
   });
 
   xhr.send();
 }
 
 // 插入出错提示
-function insertErrorAlert(errMsg, alertTmpl) {
-  if (alertTmpl == null) {
-    alertTmpl = $('#alert-danger-tmpl');
-  }
-  console.log(errMsg);
-  let errAlert = alertTmpl.contents().clone();
-  errAlert.find('.AlertMessage').text(errMsg);
-  errAlert.insertAfter(alertTmpl);
+function insertErrorAlert(msg, where) {
+  insertAlert('danger', msg, where);
 }
 
 // 插入普通提示
 function insertInfoAlert(msg, where) {
-  console.log(msg);
-  let errAlert = $('#alert-info-tmpl').contents().clone();
-  errAlert.find('.AlertMessage').text(msg);
-  if (!where) where = '#alert-info-tmpl';
-  errAlert.insertAfter(where);
+  insertAlert('info', msg, where);
 }
 
 // 插入成功提示
 function insertSuccessAlert(msg, where) {
+  insertAlert('success', msg, where);
+}
+
+// 插入提示
+function insertAlert(type, msg, where) {
   console.log(msg);
-  let errAlert = $('#alert-success-tmpl').contents().clone();
-  errAlert.find('.AlertMessage').text(msg);
-  if (!where) where = '#alert-success-tmpl';
-  errAlert.insertAfter(where);
+  let alertElem = $('#alert-'+type+'-tmpl').contents().clone();
+  alertElem.find('.AlertMessage').text(msg);
+  if (!where) where = '#alert-insert-after-here';
+  alertElem.insertAfter(where);
 }
 
 // 把文件大小换算为 KB 或 MB

@@ -68,6 +68,12 @@
         </div>
       </form>
       
+      <div id="loading-spinner" class="text-center" style="margin-top: 3rem;">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+
       <!--发送文本的成功提示-->
       <div id="send-text-success-alert" class="alert alert-success" role="alert" style="display: none;">
         <span class="AlertMessage">OK. Your message is sent successfully.</span>
@@ -76,6 +82,9 @@
           Click here to update the list below.
         </a>
       </div>
+
+      <!-- 默认的提示显示位置 -->
+      <template id="alert-insert-after-here"></template>
 
       <!--成功提示-->
       <template id="alert-success-tmpl">
@@ -107,7 +116,7 @@
         </div>
       </template>
 
-      <div id="all-messages">
+      <div id="all-messages" style="margin-bottom: 30px;">
         <template id="text-msg-tmpl">
           <div class="card mb-3">
             <div class="card-body d-flex flex-column h-100">
@@ -122,7 +131,7 @@
                   <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                   <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
                 </svg>
-                <svg class="Icon DeleteIcon bi bi-trash" title="删除"
+                <svg class="Icon DeleteIcon bi bi-trash mx-2" title="删除"
                       data-toggle="tooltip" width="1em" height="1em" 
                       viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                   <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
@@ -161,7 +170,7 @@
                       <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                       <path fill-rule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
                     </svg>
-                    <svg class="Icon DeleteIcon bi bi-trash" title="删除"
+                    <svg class="Icon DeleteIcon bi bi-trash mx-2" title="删除"
                           data-toggle="tooltip" width="1em" height="1em" 
                           viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                       <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
@@ -183,32 +192,56 @@
           </div>  
         </template>
       </div>
+
+      <!-- 高级命令 -->
+      <form class="mt-2" style="margin-bottom: 50px;">
+        <div class="form-row">
+          <div class="col">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <div class="input-group-text">高级功能</div>
+              </div>
+              <select id="commands" class="form-control">
+                <option value="none" selected>Choose...</option>
+                <option value="zip-all-files">打包全部文件</option>
+                <option value="delete-all-files">删除全部文件</option>
+              </select>  
+            </div>
+          </div>
+          <div class="col-auto">
+            <button id="execute-btn" 
+              class="btn btn-primary">Execute</button>
+          </div>
+        </div>
+        <small id="command-help" class="form-text text-muted"></small>
+      </form>
+
     </div>
 
     <input form="not-exist" type="text" id="textForCopy" style="display: none;">
 
     <div class="modal" tabindex="-1" role="dialog" id="delete-dialog">
       <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
+        <div class="modal-content">
           <div class="modal-header">
-              <h5 class="modal-title">Confirm Deletion</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-              </button>
+            <h5 class="modal-title">Confirm Deletion</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
           </div>
           <div class="modal-body">
-              <p id="confirm-question"></p>
-              <p>
-                id: 
-                <span id="id-in-modal" class="text-uppercase"></span>
-                <span id="filesize-in-modal"></span>
-              </p>
+            <p id="confirm-question"></p>
+            <p>
+              id: 
+              <span id="id-in-modal" class="text-uppercase"></span>
+              <span id="filesize-in-modal"></span>
+            </p>
           </div>
           <div class="modal-footer">
-              <button type="button" class="btn btn-danger" id="yes-button">Yes</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+            <button type="button" class="btn btn-danger" id="yes-button">Yes</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
           </div>
-          </div>
+        </div>
       </div>
     </div>
 
@@ -225,6 +258,7 @@ function initData() {
         let simple_id = simpleID(message.ID);
         let item;
 
+        // 两种类型的不同操作
         if (message.Type == 'TextMsg') {
           item = insertTextMsg(message);
         } else if (message.Type == 'FileMsg') {
@@ -238,12 +272,16 @@ function initData() {
         item.attr('id', itemID);
         item.find('.MsgID').text(simple_id);
         item.find('.Icon').tooltip();
+
+        // 顶置按钮
         item.find('.UpIcon').click(() => {
           // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
           item.insertAfter('#file-msg-tmpl');
           $('.UpIcon').tooltip('hide');
           $('html').animate({scrollTop:0},'50');
         });
+
+        // 删除按钮
         item.find('.DeleteIcon').click(() => {
           $('.DeleteIcon').tooltip('hide');
           $('#delete-dialog').modal('show');
@@ -258,6 +296,7 @@ function initData() {
             $('#filesize-in-modal').text('('+fileSizeToString(message.FileSize)+')'); 
           }
 
+          // 确认删除
           $('#yes-button').off().click(() => {
             let form = new FormData();
             form.append('id', message.ID);
@@ -282,6 +321,9 @@ function initData() {
       let errMsg = !this.response ? this.status : this.response.message;
       insertErrorAlert(errMsg);
     }
+  },
+  function() {
+    $('#loading-spinner').hide();
   });
 }
 
@@ -333,9 +375,8 @@ function simpleID(id) {
   return id.slice(len-3, len);
 }
 
-$('#send-btn').click(sendMsg);
-
 // 发送简短备忘
+$('#send-btn').click(sendMsg);
 function sendMsg(event) {
   event.preventDefault();
 
@@ -345,13 +386,51 @@ function sendMsg(event) {
 
   ajaxPostWithSpinner(form, '/api/add-text-msg', 'send', function() {
     if (this.status == 200) {
-      $('#send-text-success-alert').show();
+      window.location.reload();
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
       insertErrorAlert(errMsg);
     }
   });
 }
+
+// 提供高级命令的说明
+$('#commands').change(event => {
+  switch (event.currentTarget.value) {
+    case 'zip-all-files':
+      $('#command-help').text('打包全部文件，不包括文字备忘。打包后本页面会自动刷新，压缩包会显示在列表顶部，请点击下载按钮下载。下载后请尽快删除以节省空间。');
+      break;
+    case 'delete-all-files':
+      $('#command-help').text('删除全部文件，不会删除文字备忘。删除后本页面会自动刷新，被删除的文件不可恢复。');
+      break;
+    default:
+      $('#command-help').text('');
+  }
+});
+
+// 执行高级命令
+$('#execute-btn').click(event => {
+  event.preventDefault();
+
+  let command = $('#commands').val();
+  if (command == "none") {
+    insertInfoAlert('请从下拉菜单选择后再执行。', $('#all-messages'));
+    $('#commands').focus();
+    return;
+  }
+
+  let form = new FormData();
+  form.append('command', command);
+  ajaxPost(form, '/api/execute-command', $('#execute-btn'), function() {
+    if (this.status == 200) {
+      window.location.reload();
+    } else {
+      let errMsg = !this.response ? this.status : this.response.message;
+      insertErrorAlert(errMsg, $('#all-messages'));
+      $('#commands').focus();
+    }
+  });
+});
 
 $('.NavbarBtn').tooltip();
 

@@ -18,6 +18,8 @@ github.com/ahui2016/goutil v0.0.0-20201105063744-9d21deb123a2 h1:iZdEKt64pNDYFZj
 github.com/ahui2016/goutil v0.0.0-20201105063744-9d21deb123a2/go.mod h1:zfpLcrB+HQbXFtMJKUxRAmy1jud/VBhnTIUAk5f1dbY=
 github.com/ahui2016/goutil v0.0.0-20201105121003-d78a4ccf2b43 h1:lhprP70x/boYSIVHFxuphtTr4qTcj2iK4y6iMWppdMs=
 github.com/ahui2016/goutil v0.0.0-20201105121003-d78a4ccf2b43/go.mod h1:zfpLcrB+HQbXFtMJKUxRAmy1jud/VBhnTIUAk5f1dbY=
+github.com/ahui2016/goutil v0.0.0-20201106113149-1652f71d6132 h1:SV/DMeKy1b7DpqDRqTA6T19iJHHfldTBVCAJagIYMXw=
+github.com/ahui2016/goutil v0.0.0-20201106113149-1652f71d6132/go.mod h1:zfpLcrB+HQbXFtMJKUxRAmy1jud/VBhnTIUAk5f1dbY=
 github.com/asdine/storm v2.1.2+incompatible h1:dczuIkyqwY2LrtXPz8ixMrU/OFgZp71kbKTHGrXYt/Q=
 github.com/asdine/storm v2.1.2+incompatible/go.mod h1:RarYDc9hq1UPLImuiXK3BIWPJLdIygvV3PsInK0FbVQ=
 github.com/asdine/storm/v3 v3.2.1 h1:I5AqhkPK6nBZ/qJXySdI7ot5BlXSZ7qvDY1zAn5ZJac=
@@ -56,6 +58,8 @@ golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5h
 golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20201101102859-da207088b7d1 h1:a/mKvvZr9Jcc8oKfcmgzyp7OwF73JPWsQLvH1z2Kxck=
 golang.org/x/sys v0.0.0-20201101102859-da207088b7d1/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20201106081118-db71ae66460a h1:ALUFBKlIyeY7y5ZgPJmblk/vKz+zBQSnNiPkt41sgeg=
+golang.org/x/sys v0.0.0-20201106081118-db71ae66460a/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
