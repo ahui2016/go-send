@@ -75,7 +75,10 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
-	goutil.CheckErr(w, db.Insert(message), 500)
+	if goutil.CheckErr(w, db.Insert(message), 500) {
+		return
+	}
+	goutil.JsonResponse(w, message, 200)
 }
 
 func getAllHandler(w http.ResponseWriter, r *http.Request) {

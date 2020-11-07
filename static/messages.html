@@ -61,7 +61,6 @@
             <button id="send-btn" 
               class="btn btn-outline-primary rounded-right">Send</button>
             <button id="send-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
-              Send
               <span class="spinner-border spinner-border-sm" role="status"></span>
             </button>  
           </div>
@@ -260,10 +259,9 @@ function initData() {
       }
 
       this.response.forEach(message => {
-        let simple_id = simpleID(message.ID);
-        let item;
 
         // 两种类型的不同操作
+        let item;
         if (message.Type == 'TextMsg') {
           item = insertTextMsg(message);
         } else if (message.Type == 'FileMsg') {
@@ -273,54 +271,7 @@ function initData() {
         }
 
         // 两种类型的相同操作
-        let itemID = ItemID.next();
-        item.attr('id', itemID);
-        item.find('.MsgID').text(simple_id);
-        item.find('.Icon').tooltip();
-
-        // 顶置按钮
-        item.find('.UpIcon').click(() => {
-          // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
-          item.insertAfter('#file-msg-tmpl');
-          $('.UpIcon').tooltip('hide');
-          $('html').animate({scrollTop:0},'50');
-        });
-
-        // 删除按钮
-        item.find('.DeleteIcon').click(() => {
-          $('.DeleteIcon').tooltip('hide');
-          $('#delete-dialog').modal('show');
-          $('#id-in-modal').text(simple_id);
-
-          if (message.Type == 'TextMsg') {            
-            $('#confirm-question').text('Delete this message?');
-            $('#filesize-in-modal').text('');
-          }
-          if (message.Type == 'FileMsg') {
-            $('#confirm-question').text('Delete this file?');
-            $('#filesize-in-modal').text('('+fileSizeToString(message.FileSize)+')'); 
-          }
-
-          // 确认删除
-          $('#yes-button').off().click(() => {
-            let form = new FormData();
-            form.append('id', message.ID);
-            ajaxPost(form, '/api/delete', $('#yes-button'), function() {
-              if (this.status == 200) {
-                let infoMsg = 'id: ' + simple_id + ' is deleted';
-                item.hide('slow', function() {
-                  insertInfoAlert(infoMsg, '#'+itemID);
-                  item.remove();
-                });
-              } else {
-                window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
-              }
-            },
-            function() {
-              $('#delete-dialog').modal('hide');
-            });
-          });
-        });
+        doAfterInsert(item, message);
       });
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
@@ -329,6 +280,59 @@ function initData() {
   },
   function() {
     $('#loading-spinner').hide();
+  });
+}
+
+// 两种类型的相同操作
+function doAfterInsert(item, message) {
+  let simple_id = simpleID(message.ID);
+  let itemID = ItemID.next();
+  item.attr('id', itemID);
+  item.find('.MsgID').text(simple_id);
+  item.find('.Icon').tooltip();
+
+  // 顶置按钮
+  item.find('.UpIcon').click(() => {
+    // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
+    item.insertAfter('#file-msg-tmpl');
+    $('.UpIcon').tooltip('hide');
+    $('html').animate({scrollTop:0},'50');
+  });
+
+  // 删除按钮
+  item.find('.DeleteIcon').click(() => {
+    $('.DeleteIcon').tooltip('hide');
+    $('#delete-dialog').modal('show');
+    $('#id-in-modal').text(simple_id);
+
+    if (message.Type == 'TextMsg') {            
+      $('#confirm-question').text('Delete this message?');
+      $('#filesize-in-modal').text('');
+    }
+    if (message.Type == 'FileMsg') {
+      $('#confirm-question').text('Delete this file?');
+      $('#filesize-in-modal').text('('+fileSizeToString(message.FileSize)+')'); 
+    }
+
+    // 确认删除
+    $('#yes-button').off().click(() => {
+      let form = new FormData();
+      form.append('id', message.ID);
+      ajaxPost(form, '/api/delete', $('#yes-button'), function() {
+        if (this.status == 200) {
+          let infoMsg = 'id: ' + simple_id + ' is deleted';
+          item.hide('slow', function() {
+            insertInfoAlert(infoMsg, '#'+itemID);
+            item.remove();
+          });
+        } else {
+          window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
+        }
+      },
+      function() {
+        $('#delete-dialog').modal('hide');
+      });
+    });
   });
 }
 
@@ -386,12 +390,20 @@ function sendMsg(event) {
   event.preventDefault();
 
   let msg = $('#msg-input').val().trim();
+  if (msg == '') {
+    $('#msg-input').focus();
+    return;
+  }
+
   let form = new FormData();
   form.append('text-msg', msg);
-
   ajaxPostWithSpinner(form, '/api/add-text-msg', 'send', function() {
     if (this.status == 200) {
-      window.location.reload();
+      let message = this.response;
+      let item = insertTextMsg(message);
+      doAfterInsert(item, message);
+      $('#msg-input').val('');
+      $('#msg-input').focus();
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
       insertErrorAlert(errMsg);
