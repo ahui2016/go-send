@@ -36,6 +36,9 @@
         <p>快捷备忘 ・ 文件互传</p>
       </div>
 
+      <!-- 默认的提示显示位置 -->
+      <template id="alert-insert-after-here"></template>
+
       <!--错误提示-->
       <template id="alert-danger-tmpl">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -46,7 +49,7 @@
         </div>
       </template>
 
-      <form id="the-form" autocomplete="off">
+      <form id="the-form" autocomplete="off" style="margin-bottom: 150px;">
         <div class="input-group">
           <div class="input-group-prepend">
             <button id="login-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>

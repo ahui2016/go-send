@@ -40,6 +40,9 @@ func checkLogin(fn http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 			// 不是以 "/api/" 开头的都是页面。
+			if checkPasswordTry(w) {
+				return
+			}
 			fmt.Fprint(w, HTML["login"])
 			return
 		}

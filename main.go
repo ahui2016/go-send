@@ -29,7 +29,6 @@ func main() {
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
 	http.HandleFunc("/", homePage)
-	http.HandleFunc("/login", loginPage)
 	http.HandleFunc("/api/login", loginHandler)
 
 	http.HandleFunc("/send-file", checkLogin(addFilePage))
@@ -57,10 +56,6 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.NotFound(w, r)
 	}
-}
-
-func loginPage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, HTML["login"])
 }
 
 func addFilePage(w http.ResponseWriter, r *http.Request) {
