@@ -246,7 +246,15 @@ function drawToImg(sw, sh, mediaElem, imgElem) {
   canvas.height = thumbHeight;
   let ctx = canvas.getContext('2d');
   ctx.drawImage(mediaElem, sx, sy, sw, sh, 0, 0, thumbWidth, thumbHeight);
-  imgElem.src = canvas.toDataURL();
+  imgElem.src = canvas.toDataURL('image/jpeg');
+}
+
+async function dataUrlToFile(dataUrl, filename) {
+  let blob = await fetch(dataUrl).then(r => r.blob());
+  return new File([blob], filename, {
+    type: 'image/jpeg',
+    lastModified: Date.now()
+  });
 }
 
 // 获取地址栏的参数。

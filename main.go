@@ -132,7 +132,27 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 数据库操作成功，保存文件（如果是图片，则顺便生成缩略图）。
 	// 不可在数据库操作结束之前保存文件，因为数据库操作发生错误时不应保存文件。
-	goutil.CheckErr(w, writeFile(message, fileContents), 500)
+	if goutil.CheckErr(w, writeFile(message, fileContents), 500) {
+		return
+	}
+
+	// 如果前端传来缩略图，就保存下来。如果没有，则忽略不管。
+	thumbFile, err := getThumbnail(r)
+	if err != nil {
+		return
+	}
+	err = ioutil.WriteFile(thumbFilePath(message.ID), thumbFile, 0600)
+	goutil.CheckErr(w, err, 500)
+}
+
+func getThumbnail(r *http.Request) ([]byte, error) {
+	file, _, err := r.FormFile("thumbnail")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	return ioutil.ReadAll(file)
 }
 
 func writeFile(message *Message, fileContents []byte) error {

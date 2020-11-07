@@ -257,13 +257,19 @@ async function checkHashUpload(i) {
 }
 
 // 上传文件
-function uploadFile(fileSha256, i) {
+async function uploadFile(fileSha256, i) {
   let file = files[i];
   let form = new FormData();
   form.append('file', file);
   form.append('checksum', fileSha256);
   form.append('filename', file.name);
   form.append('filesize', file.size);
+
+  if (file.type.startsWith('video/')) {
+    let dataUrl = $('#' + file.itemID).find('img')[0].src;
+    let thumbFile = await dataUrlToFile(dataUrl, file.itemID + '.jpg');
+    form.append('thumbnail', thumbFile);
+  }
 
   ajaxPostWithSpinner(form, '/api/upload-file', 'upload', function() {
     if (this.status == 200) {
