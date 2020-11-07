@@ -135,7 +135,6 @@
             <div class="row no-gutters">
               <div class="col-3">
                 <img class="card-img img-thumbnail" />
-                <canvas style="display: none;"></canvas>
               </div>
               <div class="col">
                 <div class="card-body d-flex flex-column h-100">
@@ -159,7 +158,9 @@
         </template>
       </div>
 
-    <script>
+    </div>
+
+<script>
     // 如果有些函数在这里找不到，那就是在 util.js 里。
 // eruda.init();
 
@@ -198,10 +199,10 @@ $('#file-input').change(event => {
     updateFilesCount(files.length);
 
     let item;
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
       item = $('#image-msg-tmpl').contents().clone();
       item.insertAfter('#image-msg-tmpl');
-      tryToDrawThumb(file, item.find('canvas'), item.find('.card-img'));
+      tryToDrawThumb(file, item.find('.card-img')[0]);
     } else {
       item = $('#file-msg-tmpl').contents().clone();
       item.insertAfter('#image-msg-tmpl');

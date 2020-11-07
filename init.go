@@ -22,10 +22,9 @@ const (
 	// 99 days, for session
 	maxAge = 60 * 60 * 24 * 99
 
-	// 10 MB, for http.MaxBytesReader
-	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 10m
-	maxBytes int64 = 1024 * 1024 * 10
-	// Check the Content-Length header immediately when the request comes in.
+	// 100 MB, for http.MaxBytesReader
+	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
+	maxBytes int64 = 1024 * 1024 * 100
 )
 
 var (

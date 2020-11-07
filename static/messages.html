@@ -257,7 +257,7 @@ function initData() {
     if (this.status == 200) {
 
       // 条目数太少时不显示高级功能
-      if (this.response.length > 5) {
+      if (this.response.length >= 5) {
         $('#commands-form').show();
       }
 

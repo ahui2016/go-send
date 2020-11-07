@@ -77,7 +77,7 @@ $('#login-btn').click(event => {
   
   ajaxPostWithSpinner(form, '/api/login', 'login', function() {
     if (this.status == 200) {
-      window.location = '/home';
+      window.location.reload();
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
       insertErrorAlert(errMsg);

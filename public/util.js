@@ -187,69 +187,66 @@ function urlWithDate(originURL) {
   return originURL + '?' + d.getTime();
 }
 
-// Convert `FileReader.readAsDataURL` to promise style.
-function readFilePromise(file) {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-    reader.onerror = reject;
-  });
-}
-
 // 文件未必是图片，因此尝试生成缩略图，如果出错则说明这不是图片。
-async function tryToDrawThumb(file, canvasElem, imgElem) {
+async function tryToDrawThumb(file, imgElem) {
   try {
-    let src = await readFilePromise(file);
-    await drawThumb(src, canvasElem, imgElem);
-    // canvasToImg(canvasElem[0], imgElem[0]);
+    let src = URL.createObjectURL(file);
+    await drawThumb(file.type, src, imgElem);
+    URL.revokeObjectURL(src);
   } catch (e) {
     console.log(e);
   }
 }
 
-// https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
-function canvasToImg(canvas, img) {
-  canvas.toBlob(blob => {
-    let url = URL.createObjectURL(blob);
-    img.onload = function() {
-      URL.revokeObjectURL(url);
+// 生成缩略图显示在 imgElem 里，如果不是 video 就当作是 image.
+function drawThumb(filetype, src, imgElem) {
+  return new Promise((resolve, reject) => {
+    let mediaElem;
+    if (filetype.startsWith('video/')) {
+      let video = document.createElement('video');
+      mediaElem = video;
+      video.src = src;
+      video.addEventListener('loadeddata', function() {
+        // 取第几秒的截图？不想取第一帧（因为片头可能与视频内容关系不大），
+        // 也不想取太后面的截图（担心消耗太多资源）。
+        video.currentTime = video.duration / 30;
+      });
+      video.addEventListener('timeupdate', function() {
+        let sw = video.videoWidth, sh = video.videoHeight;
+        drawToImg(sw, sh, mediaElem, imgElem);
+        resolve();
+      });
+    } else {
+      let img = document.createElement('img');
+      mediaElem = img;
+      img.src = src;
+      img.onload = function() {
+        let sw = img.width, sh = img.height;
+        drawToImg(sw, sh, mediaElem, imgElem);
+        resolve();
+      }
     }
-    img.src = url;
+    mediaElem.onerror = reject;
   });
 }
 
-// 生成缩略图并描绘到一个 canvas 里。
-function drawThumb(src, canvasElem, imgElem) {
-  return new Promise((resolve, reject) => {
-    let img = new Image();
-    img.src = src;
-    img.onload = function() {
-
-      // 截取原图中间的正方形
-      let sw = img.width, sh = img.height;
-      let sx = 0, sy = 0;
-      if (sw > sh) {
-          sx = (sw - sh) / 2;
-          sw = sh;
-      } else {
-          sy = (sh - sw) / 2;
-          sh = sw;
-      }
-
-      canvasElem
-        .attr('width', thumbWidth)
-        .attr('height', thumbHeight);
-      let ctx = canvasElem[0].getContext('2d'); // canvasElem[0] is the raw html-element.
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, thumbWidth, thumbHeight);
-
-      imgElem[0].src = canvasElem[0].toDataURL();
-      resolve();
-    };
-    img.onerror = reject;
-  });
+// mediaElem 可能是 img, 也可能是 video.
+function drawToImg(sw, sh, mediaElem, imgElem) {
+  // 截取原图中间的正方形
+  let sx = 0, sy = 0;
+  if (sw > sh) {
+      sx = (sw - sh) / 2;
+      sw = sh;
+  } else {
+      sy = (sh - sw) / 2;
+      sh = sw;
+  }
+  let canvas = document.createElement('canvas');
+  canvas.width = thumbWidth;
+  canvas.height = thumbHeight;
+  let ctx = canvas.getContext('2d');
+  ctx.drawImage(mediaElem, sx, sy, sw, sh, 0, 0, thumbWidth, thumbHeight);
+  imgElem.src = canvas.toDataURL();
 }
 
 // 获取地址栏的参数。
