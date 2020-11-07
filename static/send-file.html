@@ -237,7 +237,6 @@ function updateFilesCount(count) {
 
 // 检查文件的校验和，如无冲突则上传文件。
 async function checkHashUpload(i) {
-  console.log(i);
   let file = files[i];
   setCardAlert('info', file.itemID, 'Uploading...');
   let fileSha256 = await sha256Hex(file);

@@ -194,7 +194,7 @@
       </div>
 
       <!-- 高级命令 -->
-      <form class="mt-2" style="margin-bottom: 150px;">
+      <form id="commands-form" class="mt-2" style="margin-bottom: 150px; display: none;">
         <div class="form-row">
           <div class="col">
             <div class="input-group">
@@ -253,8 +253,13 @@ initData();
 function initData() {
   ajaxGet('/api/all', null, function() {
     if (this.status == 200) {
-      this.response.forEach(message => {
 
+      // 条目数太少时不显示高级功能
+      if (this.response.length > 5) {
+        $('#commands-form').show();
+      }
+
+      this.response.forEach(message => {
         let simple_id = simpleID(message.ID);
         let item;
 
