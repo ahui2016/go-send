@@ -6,6 +6,7 @@ import (
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/go-send/session"
+	"github.com/ahui2016/goutil"
 	"github.com/asdine/storm/v3"
 	"github.com/asdine/storm/v3/q"
 )
@@ -162,4 +163,11 @@ func (db *DB) AllFiles() (files []Message, err error) {
 // DeleteAllFiles .
 func (db *DB) DeleteAllFiles() error {
 	return db.DB.Select(q.Eq("Type", model.FileMsg)).Delete(new(Message))
+}
+
+// UpdateDatetime ...
+func (db *DB) UpdateDatetime(id string) error {
+	db.Lock()
+	defer db.Unlock()
+	return db.DB.UpdateField(&Message{ID: id}, "UpdatedAt", goutil.TimeNow())
 }

@@ -40,6 +40,8 @@ func main() {
 	http.HandleFunc("/api/all", checkLogin(getAllHandler))
 	http.HandleFunc("/api/delete", checkLogin(deleteHandler))
 
+	http.HandleFunc("/api/update-datetime", checkLogin(updateDatetime))
+
 	http.HandleFunc("/api/execute-command", checkLogin(executeCommand))
 
 	addr := "127.0.0.1:80"
@@ -254,4 +256,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	passwordTry = 0
 	db.Sess.Add(w, goutil.NewID())
+}
+
+func updateDatetime(w http.ResponseWriter, r *http.Request) {
+	id, ok := goutil.GetID(w, r)
+	if !ok {
+		return
+	}
+	goutil.CheckErr(w, db.UpdateDatetime(id), 500)
 }

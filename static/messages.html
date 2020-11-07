@@ -295,16 +295,31 @@ function doAfterInsert(item, message) {
   item.find('.Icon').tooltip();
 
   // 顶置按钮
-  item.find('.UpIcon').click(() => {
-    // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
-    item.insertAfter('#file-msg-tmpl');
-    $('.UpIcon').tooltip('hide');
-    $('html').animate({scrollTop:0},'50');
+  let up_button = item.find('.UpIcon');
+  up_button.click(event => {
+    let form = new FormData();
+    form.append('id', message.ID);
+    up_button.hide();
+    ajaxPost(form, '/api/update-datetime', null, function() {
+      if (this.status == 200) {
+        // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
+        item.insertAfter('#file-msg-tmpl');
+        up_button.tooltip('hide');
+        $('html').animate({scrollTop:0},'50');
+      } else {
+        let errMsg = !this.response ? this.status : this.response.message;
+        insertErrorAlert(errMsg, '#'+itemID);
+      }
+    },
+    function() {
+      up_button.show();
+    });
   });
 
   // 删除按钮
-  item.find('.DeleteIcon').click(() => {
-    $('.DeleteIcon').tooltip('hide');
+  let delete_button = item.find('.DeleteIcon');
+  delete_button.click(() => {
+    delete_button.tooltip('hide');
     $('#delete-dialog').modal('show');
     $('#id-in-modal').text(simple_id);
 
