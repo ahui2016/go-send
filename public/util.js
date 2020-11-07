@@ -280,5 +280,8 @@ let ItemID = {
   next: function() {
     this.n++;
     return 'item-' + this.n;
+  },
+  current: function() {
+    return 'item-' + this.n;
   }
 };

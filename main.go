@@ -165,9 +165,11 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 func executeCommand(w http.ResponseWriter, r *http.Request) {
 	switch command := r.FormValue("command"); command {
 	case "zip-all-files":
-		if goutil.CheckErr(w, zipAllFiles(), 500) {
+		message, err := zipAllFiles()
+		if goutil.CheckErr(w, err, 500) {
 			return
 		}
+		goutil.JsonResponse(w, message, 200)
 	case "delete-all-files":
 		if goutil.CheckErr(w, deleteAllFiles(), 500) {
 			return
@@ -179,26 +181,27 @@ func executeCommand(w http.ResponseWriter, r *http.Request) {
 
 // zipAllFiles 把全部文件打包，打包后的文件将会在列表中显示，因此用户可以下载和删除。
 // zipAllFiles 会自动剔除使用 zipAllFiles 等函数打包的文件，避免重复打包。
-func zipAllFiles() error {
-	message, err := db.NewZipMsg("gosend_all_files")
+func zipAllFiles() (message *Message, err error) {
+	message, err = db.NewZipMsg("gosend_all_files")
 	if err != nil {
-		return err
+		return
 	}
 	allFiles, err := db.AllFiles()
 	if err != nil {
-		return err
+		return
 	}
 	zipFilePath := localFilePath(message.ID)
 	err = zipper.Create(zipFilePath, zipperFiles(allFiles))
 	if err != nil {
-		return err
+		return
 	}
 	stat, err := os.Lstat(zipFilePath)
 	if err != nil {
-		return err
+		return
 	}
 	message.FileSize = stat.Size()
-	return db.Save(message)
+	err = db.Save(message)
+	return
 }
 
 // zipperFiles 会自动剔除使用 GosendZip, 避免重复打包。

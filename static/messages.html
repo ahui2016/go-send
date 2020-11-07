@@ -193,7 +193,7 @@
       </div>
 
       <!-- 高级命令 -->
-      <form id="commands-form" class="mt-2" style="margin-bottom: 150px; display: none;">
+      <form id="commands-form" class="mt-2" style="display: none;">
         <div class="form-row">
           <div class="col">
             <div class="input-group">
@@ -214,6 +214,9 @@
         </div>
         <small id="command-help" class="form-text text-muted"></small>
       </form>
+
+      <!-- 底线 -->
+      <div class="text-center" style="color: white; margin-top: 150px;">.</div>
 
     </div>
 
@@ -403,7 +406,6 @@ function sendMsg(event) {
       let item = insertTextMsg(message);
       doAfterInsert(item, message);
       $('#msg-input').val('');
-      $('#msg-input').focus();
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
       insertErrorAlert(errMsg);
@@ -415,7 +417,7 @@ function sendMsg(event) {
 $('#commands').change(event => {
   switch (event.currentTarget.value) {
     case 'zip-all-files':
-      $('#command-help').text('打包全部文件，不包括文字备忘。打包后本页面会自动刷新，压缩包会显示在列表顶部，请点击下载按钮下载。下载后请尽快删除以节省空间。');
+      $('#command-help').text('打包全部文件，不包括文字备忘。打包后，压缩包会显示在列表顶部。下载后请尽快删除以节省空间。');
       break;
     case 'delete-all-files':
       $('#command-help').text('删除全部文件，不会删除文字备忘。删除后本页面会自动刷新，被删除的文件不可恢复。');
@@ -440,6 +442,14 @@ $('#execute-btn').click(event => {
   form.append('command', command);
   ajaxPost(form, '/api/execute-command', $('#execute-btn'), function() {
     if (this.status == 200) {
+      // 如果 this.response 是一个 Message, 则插入列表顶部，否则刷新页面。
+      if (this.response && this.response.ID) {
+        $('html').animate({scrollTop:0},'50');
+        let message = this.response;
+        let item = insertTextMsg(message);
+        doAfterInsert(item, message);
+        return;
+      }
       window.location.reload();
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
