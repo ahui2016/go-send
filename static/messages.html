@@ -204,6 +204,7 @@
                 <option value="none" selected>Choose...</option>
                 <option value="zip-all-files">打包全部文件</option>
                 <option value="delete-all-files">删除全部文件</option>
+                <option value="delete-5-files">删除列表底部 5 个文件</option>
               </select>  
             </div>
           </div>
@@ -436,6 +437,9 @@ $('#commands').change(event => {
       break;
     case 'delete-all-files':
       $('#command-help').text('删除全部文件，不会删除文字备忘。删除后本页面会自动刷新，被删除的文件不可恢复。');
+      break;
+    case 'delete-5-files':
+      $('#command-help').text('删除列表底部 5 个文件，忽略文字备忘。如果在列表底部有不想删除的文件，可点击其 “上升” 按钮使其上升到列表顶部，如果一共只有 5 个文件或更少，则全部文件都会被删除。');
       break;
     default:
       $('#command-help').text('');

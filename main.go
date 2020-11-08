@@ -40,8 +40,7 @@ func main() {
 	http.HandleFunc("/messages", checkLogin(messagesPage))
 	http.HandleFunc("/api/add-text-msg",
 		bodyLimit(checkLogin(addTextMsg)))
-	http.HandleFunc("/api/all",
-		bodyLimit(checkLogin(getAllHandler)))
+	http.HandleFunc("/api/all", checkLogin(getAllHandler))
 	http.HandleFunc("/api/delete",
 		bodyLimit(checkLogin(deleteHandler)))
 
@@ -203,6 +202,10 @@ func executeCommand(w http.ResponseWriter, r *http.Request) {
 		if goutil.CheckErr(w, deleteAllFiles(), 500) {
 			return
 		}
+	case "delete-5-files":
+		if goutil.CheckErr(w, deleteOldFiles(5), 500) {
+			return
+		}
 	default:
 		goutil.JsonMessage(w, "unknown command", 400)
 	}
@@ -249,20 +252,35 @@ func zipperFiles(fileMessages []Message) (files []zipper.File) {
 	return
 }
 
+func deleteOldFiles(n int) error {
+	files, err := db.OldFiles(n)
+	if err != nil {
+		return err
+	}
+	if err := deleteFilesAndThumb(files); err != nil {
+		return err
+	}
+	return db.DeleteOldFiles(n)
+}
+
 func deleteAllFiles() error {
 	allFiles, err := db.AllFiles()
 	if err != nil {
 		return err
 	}
-	var filePaths []string
-	for _, file := range allFiles {
-		originFile, thumb := getFileAndThumb(file.ID)
-		filePaths = append(filePaths, originFile, thumb)
-	}
-	if err := goutil.DeleteFiles(filePaths...); err != nil {
+	if err := deleteFilesAndThumb(allFiles); err != nil {
 		return err
 	}
 	return db.DeleteAllFiles()
+}
+
+func deleteFilesAndThumb(files []Message) error {
+	var filePaths []string
+	for _, file := range files {
+		originFile, thumb := getFileAndThumb(file.ID)
+		filePaths = append(filePaths, originFile, thumb)
+	}
+	return goutil.DeleteFiles(filePaths...)
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {

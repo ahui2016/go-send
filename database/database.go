@@ -165,6 +165,36 @@ func (db *DB) DeleteAllFiles() error {
 	return db.DB.Select(q.Eq("Type", model.FileMsg)).Delete(new(Message))
 }
 
+// OldFiles 找出最老的 (更新日期最早的) n 个文件 (Type = FileMsg)
+// 返回 []Message.
+func (db *DB) OldFiles(n int) (files []Message, err error) {
+	query := db.queryOldFiles(n)
+	err = query.Find(&files)
+	return
+}
+
+// queryOldFiles 找出最老的 (更新日期最早的) n 个文件 (Type = FileMsg),
+// 返回 storm.Query.
+func (db *DB) queryOldFiles(n int) storm.Query {
+	return db.DB.Select(q.Eq("Type", model.FileMsg)).
+		OrderBy("UpdatedAt").Limit(n)
+}
+
+// DeleteOldFiles .
+func (db *DB) DeleteOldFiles(n int) error {
+	query := db.queryOldFiles(n)
+	return query.Delete(new(Message))
+}
+
+// DeleteMessages deletes messages by IDs.
+func (db *DB) DeleteMessages(messages []Message) error {
+	var IDs []string
+	for i := range messages {
+		IDs = append(IDs, messages[i].ID)
+	}
+	return db.DB.Select(q.In("ID", IDs)).Delete(new(Message))
+}
+
 // UpdateDatetime ...
 func (db *DB) UpdateDatetime(id string) error {
 	db.Lock()
