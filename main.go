@@ -29,28 +29,31 @@ func main() {
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
 	http.HandleFunc("/", homePage)
-	http.HandleFunc("/api/login", loginHandler)
+	http.HandleFunc("/api/login", bodyLimit(loginHandler))
 
 	http.HandleFunc("/send-file", checkLogin(addFilePage))
-	http.HandleFunc("/api/checksum", checkLogin(checksumHandler))
-	http.HandleFunc("/api/upload-file", checkLogin(setMaxBytes(uploadHandler)))
+	http.HandleFunc("/api/checksum",
+		bodyLimit(checkLogin(checksumHandler)))
+	http.HandleFunc("/api/upload-file",
+		maxBodyLimit(checkLogin(uploadHandler)))
 
 	http.HandleFunc("/messages", checkLogin(messagesPage))
-	http.HandleFunc("/api/add-text-msg", checkLogin(setMaxBytes(addTextMsg)))
-	http.HandleFunc("/api/all", checkLogin(getAllHandler))
-	http.HandleFunc("/api/delete", checkLogin(deleteHandler))
+	http.HandleFunc("/api/add-text-msg",
+		bodyLimit(checkLogin(addTextMsg)))
+	http.HandleFunc("/api/all",
+		bodyLimit(checkLogin(getAllHandler)))
+	http.HandleFunc("/api/delete",
+		bodyLimit(checkLogin(deleteHandler)))
 
-	http.HandleFunc("/api/update-datetime", checkLogin(updateDatetime))
+	http.HandleFunc("/api/update-datetime",
+		bodyLimit(checkLogin(updateDatetime)))
 
-	http.HandleFunc("/api/execute-command", checkLogin(executeCommand))
+	http.HandleFunc("/api/execute-command",
+		bodyLimit(checkLogin(executeCommand)))
 
 	addr := "127.0.0.1:80"
-	s := &http.Server{
-		Addr:           addr,
-		MaxHeaderBytes: contentLengthLimit,
-	}
 	log.Print(addr)
-	log.Fatal(s.ListenAndServe())
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {

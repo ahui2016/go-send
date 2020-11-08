@@ -10,13 +10,23 @@ import (
 	"github.com/ahui2016/goutil"
 )
 
+// setBodySize(fn, defaultBodySize)
+func bodyLimit(fn http.HandlerFunc) http.HandlerFunc {
+	return setBodySize(fn, defaultBodySize)
+}
+
+// setBodySize(fn, maxBodySize)
+func maxBodyLimit(fn http.HandlerFunc) http.HandlerFunc {
+	return setBodySize(fn, maxBodySize)
+}
+
 // 限制从前端传输过来的数据大小。
-func setMaxBytes(fn http.HandlerFunc) http.HandlerFunc {
+func setBodySize(fn http.HandlerFunc, max int64) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if goutil.CheckErr(w, checkContentLength(w, r, maxBytes), 500) {
+		if goutil.CheckErr(w, checkContentLength(w, r, max), 500) {
 			return
 		}
-		r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+		r.Body = http.MaxBytesReader(w, r.Body, max)
 		fn(w, r)
 	}
 }
@@ -27,7 +37,7 @@ func checkContentLength(w http.ResponseWriter, r *http.Request, length int64) er
 	if err != nil {
 		return err
 	}
-	if size > maxBytes {
+	if size > length {
 		return errors.New("File Too Large")
 	}
 	return nil
