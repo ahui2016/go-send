@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"log"
 	"sync"
 
@@ -24,18 +25,21 @@ type (
 
 // DB .
 type DB struct {
-	path string
-	DB   *storm.DB
-	Sess *session.Manager
+	path      string
+	capacity  int64
+	totalSize int64
+	DB        *storm.DB
+	Sess      *session.Manager
 	sync.Mutex
 }
 
 // Open .
-func (db *DB) Open(maxAge int, dbPath string) (err error) {
+func (db *DB) Open(maxAge int, cap int64, dbPath string) (err error) {
 	if db.DB, err = storm.Open(dbPath); err != nil {
 		return err
 	}
 	db.path = dbPath
+	db.capacity = cap
 	db.Sess = session.NewManager(maxAge)
 	if err := db.createIndexes(); err != nil {
 		return err
@@ -142,10 +146,43 @@ func (db *DB) Insert(message *Message) error {
 }
 
 // Save wraps storm.DB.Save with a lock.
-func (db *DB) Save(data interface{}) error {
+func (db *DB) Save(message *Message) error {
 	db.Lock()
 	defer db.Unlock()
-	return db.DB.Save(data)
+	if err := db.increaseTotalSize(message.FileSize); err != nil {
+		return err
+	}
+	return db.DB.Save(message)
+}
+
+// increaseTotalSize 用于向数据库添加内容时更新总体积。
+func (db *DB) increaseTotalSize(addition int64) error {
+	if db.totalSize+addition > db.capacity {
+		return errors.New("达到数据库总容量上限")
+	}
+	db.totalSize += addition
+	return nil
+}
+
+//TotalSize .
+func (db *DB) TotalSize() int64 {
+	return db.totalSize
+}
+
+// recountTotalSize 用于一次性删除多个项目时重新计算数据库总体积。
+func (db *DB) RecountTotalSize() error {
+	var totalSize int64 = 0
+	err := db.DB.Select(q.True()).Each(
+		new(Message), func(record interface{}) error {
+			message := record.(*Message)
+			totalSize += message.FileSize
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+	db.totalSize = totalSize
+	return nil
 }
 
 // AllByUpdatedAt .

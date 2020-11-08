@@ -50,9 +50,16 @@ func main() {
 	http.HandleFunc("/api/execute-command",
 		bodyLimit(checkLogin(executeCommand)))
 
+	http.HandleFunc("/totalSize", totalSize)
+
 	addr := "127.0.0.1:80"
 	log.Print(addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+func totalSize(w http.ResponseWriter, r *http.Request) {
+	db.RecountTotalSize()
+	goutil.JsonResponse(w, db.TotalSize(), 200)
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {

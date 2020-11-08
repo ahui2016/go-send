@@ -18,6 +18,7 @@ const (
 	staticFolder     = "static"
 	defaultPassword  = "abc"
 	passwordMaxTry   = 5
+	databaseCapacity = 1 << 30 // 1GB
 
 	// 99 days, for session
 	maxAge = 60 * 60 * 24 * 99
@@ -51,7 +52,7 @@ func init() {
 	goutil.MustMkdir(filesDir)
 
 	// open the db here, close the db in main().
-	if err := db.Open(maxAge, dbPath); err != nil {
+	if err := db.Open(maxAge, databaseCapacity, dbPath); err != nil {
 		panic(err)
 	}
 }
