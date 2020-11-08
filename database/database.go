@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"sync"
 
@@ -12,10 +13,11 @@ import (
 	"github.com/asdine/storm/v3/q"
 )
 
-// 用来保存当前最新 id.
+// 用来保存数据库的当前状态.
 const (
-	currentIDBucket = "current-id-bucket"
-	currentIDKey    = "current-id-key"
+	metadataBucket = "metadata-bucket"
+	currentIDKey   = "current-id-key"
+	totalSizeKey   = "total-size-key"
 )
 
 type (
@@ -25,11 +27,10 @@ type (
 
 // DB .
 type DB struct {
-	path      string
-	capacity  int64
-	totalSize int64
-	DB        *storm.DB
-	Sess      *session.Manager
+	path     string
+	capacity int64
+	DB       *storm.DB
+	Sess     *session.Manager
 	sync.Mutex
 }
 
@@ -48,35 +49,63 @@ func (db *DB) Open(maxAge int, cap int64, dbPath string) (err error) {
 	return nil
 }
 
-// 创建 bucket 和索引，并生成初始 id.
+// 创建 bucket 和索引，并初始化数据库状态.
 func (db *DB) createIndexes() error {
-	if err := db.DB.Init(&Message{}); err != nil {
-		return err
-	}
-	_, err := db.getCurrentID()
-
-	// 如果 current-id 不存在，则生成 first-id.
-	if err == storm.ErrNotFound {
-		if err := db.createFirstID(); err != nil {
-			return err
-		}
-	}
-
-	// 如果有其他错误，则返回错误。
-	if err != nil && err != storm.ErrNotFound {
-		return err
-	}
-	return nil
+	err1 := db.DB.Init(&Message{})
+	err2 := db.initFirstID()
+	err3 := db.initTotalSize()
+	return WrapErrors(err1, err2, err3)
 }
 
-func (db *DB) getCurrentID() (id IncreaseID, err error) {
-	err = db.DB.Get(currentIDBucket, currentIDKey, &id)
+// WrapErrors 把多个错误合并为一个错误.
+func WrapErrors(allErrors ...error) (wrapped error) {
+	for _, err := range allErrors {
+		if err != nil {
+			if wrapped == nil {
+				wrapped = err
+			} else {
+				wrapped = fmt.Errorf("%v | %v", err, wrapped)
+			}
+		}
+	}
 	return
 }
 
-func (db *DB) createFirstID() error {
-	id := model.FirstID()
-	return db.DB.Set(currentIDBucket, currentIDKey, id)
+func (db *DB) initFirstID() (err error) {
+	_, err = db.getCurrentID()
+	if err != nil && err != storm.ErrNotFound {
+		return
+	}
+	if err == storm.ErrNotFound {
+		id := model.FirstID()
+		return db.DB.Set(metadataBucket, currentIDKey, id)
+	}
+	return
+}
+
+func (db *DB) initTotalSize() (err error) {
+	_, err = db.getTotalSize()
+	if err != nil && err != storm.ErrNotFound {
+		return
+	}
+	if err == storm.ErrNotFound {
+		return db.setTotalSize(0)
+	}
+	return
+}
+
+func (db *DB) getCurrentID() (id IncreaseID, err error) {
+	err = db.DB.Get(metadataBucket, currentIDKey, &id)
+	return
+}
+
+func (db *DB) getTotalSize() (size int64, err error) {
+	err = db.DB.Get(metadataBucket, totalSizeKey, &size)
+	return
+}
+
+func (db *DB) setTotalSize(size int64) error {
+	return db.DB.Set(metadataBucket, totalSizeKey, size)
 }
 
 // Close .
@@ -134,7 +163,7 @@ func (db *DB) getNextID() (nextID IncreaseID, err error) {
 		return nextID, err
 	}
 	nextID = currentID.Increase()
-	if err := db.DB.Set(currentIDBucket, currentIDKey, &nextID); err != nil {
+	if err := db.DB.Set(metadataBucket, currentIDKey, &nextID); err != nil {
 		return nextID, err
 	}
 	return
@@ -157,20 +186,18 @@ func (db *DB) Save(message *Message) error {
 
 // increaseTotalSize 用于向数据库添加内容时更新总体积。
 func (db *DB) increaseTotalSize(addition int64) error {
-	if db.totalSize+addition > db.capacity {
-		return errors.New("达到数据库总容量上限")
+	totalSize, err := db.getTotalSize()
+	if err != nil {
+		return err
 	}
-	db.totalSize += addition
-	return nil
-}
-
-//TotalSize .
-func (db *DB) TotalSize() int64 {
-	return db.totalSize
+	if totalSize+addition > db.capacity {
+		return errors.New("超过数据库总容量上限")
+	}
+	return db.setTotalSize(totalSize + addition)
 }
 
 // recountTotalSize 用于一次性删除多个项目时重新计算数据库总体积。
-func (db *DB) RecountTotalSize() error {
+func (db *DB) recountTotalSize() error {
 	var totalSize int64 = 0
 	err := db.DB.Select(q.True()).Each(
 		new(Message), func(record interface{}) error {
@@ -181,8 +208,7 @@ func (db *DB) RecountTotalSize() error {
 	if err != nil {
 		return err
 	}
-	db.totalSize = totalSize
-	return nil
+	return db.setTotalSize(totalSize)
 }
 
 // AllByUpdatedAt .
@@ -199,7 +225,11 @@ func (db *DB) AllFiles() (files []Message, err error) {
 
 // DeleteAllFiles .
 func (db *DB) DeleteAllFiles() error {
-	return db.DB.Select(q.Eq("Type", model.FileMsg)).Delete(new(Message))
+	err := db.DB.Select(q.Eq("Type", model.FileMsg)).Delete(new(Message))
+	if err != nil {
+		return err
+	}
+	return db.recountTotalSize()
 }
 
 // OldFiles 找出最老的 (更新日期最早的) n 个文件 (Type = FileMsg)
@@ -220,7 +250,10 @@ func (db *DB) queryOldFiles(n int) storm.Query {
 // DeleteOldFiles .
 func (db *DB) DeleteOldFiles(n int) error {
 	query := db.queryOldFiles(n)
-	return query.Delete(new(Message))
+	if err := query.Delete(new(Message)); err != nil {
+		return err
+	}
+	return db.recountTotalSize()
 }
 
 // DeleteMessages deletes messages by IDs.
@@ -229,7 +262,11 @@ func (db *DB) DeleteMessages(messages []Message) error {
 	for i := range messages {
 		IDs = append(IDs, messages[i].ID)
 	}
-	return db.DB.Select(q.In("ID", IDs)).Delete(new(Message))
+	err := db.DB.Select(q.In("ID", IDs)).Delete(new(Message))
+	if err != nil {
+		return err
+	}
+	return db.recountTotalSize()
 }
 
 // UpdateDatetime ...
