@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,18 +13,24 @@ import (
 // 限制从前端传输过来的数据大小。
 func setMaxBytes(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Check the Content-Length header immediately when the request comes in.
-		size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
-		if goutil.CheckErr(w, err, 500) {
-			return
-		}
-		if size > maxBytes {
-			goutil.JsonMessage(w, "File Too Large", 400)
+		if goutil.CheckErr(w, checkContentLength(w, r, maxBytes), 500) {
 			return
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
 		fn(w, r)
 	}
+}
+
+// Check the Content-Length header immediately when the request comes in.
+func checkContentLength(w http.ResponseWriter, r *http.Request, length int64) error {
+	size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
+	if err != nil {
+		return err
+	}
+	if size > maxBytes {
+		return errors.New("File Too Large")
+	}
+	return nil
 }
 
 func checkLoginForFileServer(h http.Handler) http.HandlerFunc {

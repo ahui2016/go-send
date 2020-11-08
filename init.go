@@ -25,6 +25,9 @@ const (
 	// 100 MB, for http.MaxBytesReader
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
 	maxBytes int64 = 1024 * 1024 * 100
+
+	// 3 MB, 普通请求（没有文件的请求）需要限制更严格。
+	contentLengthLimit int = 3 << 20
 )
 
 var (

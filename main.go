@@ -45,8 +45,12 @@ func main() {
 	http.HandleFunc("/api/execute-command", checkLogin(executeCommand))
 
 	addr := "127.0.0.1:80"
+	s := &http.Server{
+		Addr:           addr,
+		MaxHeaderBytes: contentLengthLimit,
+	}
 	log.Print(addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(s.ListenAndServe())
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
