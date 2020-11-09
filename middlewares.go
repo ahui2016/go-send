@@ -77,16 +77,6 @@ func checkLogin(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func withDB(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if goutil.CheckErr(w, db.Open(), 500) {
-			return
-		}
-		defer db.Close()
-		fn(w, r)
-	}
-}
-
 func isLoggedIn(r *http.Request) bool {
 	return db.Sess.Check(r)
 }

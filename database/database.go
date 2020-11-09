@@ -32,31 +32,18 @@ type DB struct {
 	sync.Mutex
 }
 
-// NewDB 生成一个已初始化的 db (db.DB 已关闭).
-// 程序开始运行时在 init.go 里执行一次 NewDB, 后续在 main.go 使用 db.Open
-func NewDB(maxAge int, cap int64, dbPath string) (*DB, error) {
-	stormDB, err := storm.Open(dbPath)
-	if err != nil {
-		return nil, err
+// Open .
+func (db *DB) Open(maxAge int, cap int64, dbPath string) (err error) {
+	if db.DB, err = storm.Open(dbPath); err != nil {
+		return err
 	}
-	defer stormDB.Close()
-
-	db := &DB{
-		path:     dbPath,
-		capacity: cap,
-		DB:       stormDB,
-		Sess:     session.NewManager(maxAge),
-	}
+	db.path = dbPath
+	db.capacity = cap
+	db.Sess = session.NewManager(maxAge)
 	err1 := db.createIndexes()
 	err2 := db.initFirstID()
 	err3 := db.initTotalSize()
-	return db, goutil.WrapErrors(err1, err2, err3)
-}
-
-// Open 后应紧接 defer db.Close()
-func (db *DB) Open() (err error) {
-	db.DB, err = storm.Open(db.path)
-	return
+	return goutil.WrapErrors(err1, err2, err3)
 }
 
 // Close 只是 db.DB.Close(), 不清空 db 里的其它部分。
