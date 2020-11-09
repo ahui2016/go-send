@@ -61,7 +61,7 @@ func totalSize(w http.ResponseWriter, r *http.Request) {
 	size, _ := db.GetTotalSize()
 	resp := make(map[string]int64)
 	resp["totalSize"] = size
-	resp["capacity"] = DatabaseCapacity
+	resp["capacity"] = databaseCapacity
 	goutil.JsonResponse(w, resp, 200)
 }
 

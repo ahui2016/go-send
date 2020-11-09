@@ -24,6 +24,8 @@ github.com/ahui2016/goutil v0.0.0-20201106131826-21a782e223f7 h1:V2S0xNM5k2Ty+R1
 github.com/ahui2016/goutil v0.0.0-20201106131826-21a782e223f7/go.mod h1:zfpLcrB+HQbXFtMJKUxRAmy1jud/VBhnTIUAk5f1dbY=
 github.com/ahui2016/goutil v0.0.0-20201108154543-21cd7a3f6a63 h1:p7M0kLXCBsIkEd1yV0o70Dy07DZuK5AILkPbTwOIK2w=
 github.com/ahui2016/goutil v0.0.0-20201108154543-21cd7a3f6a63/go.mod h1:zfpLcrB+HQbXFtMJKUxRAmy1jud/VBhnTIUAk5f1dbY=
+github.com/ahui2016/goutil v0.0.0-20201109092052-7af755b02765 h1:6rMi8Bz7ajIUNvgwokTzzNSa4g/+Ip/P6sarDgbXIIA=
+github.com/ahui2016/goutil v0.0.0-20201109092052-7af755b02765/go.mod h1:zfpLcrB+HQbXFtMJKUxRAmy1jud/VBhnTIUAk5f1dbY=
 github.com/asdine/storm v2.1.2+incompatible h1:dczuIkyqwY2LrtXPz8ixMrU/OFgZp71kbKTHGrXYt/Q=
 github.com/asdine/storm v2.1.2+incompatible/go.mod h1:RarYDc9hq1UPLImuiXK3BIWPJLdIygvV3PsInK0FbVQ=
 github.com/asdine/storm/v3 v3.2.1 h1:I5AqhkPK6nBZ/qJXySdI7ot5BlXSZ7qvDY1zAn5ZJac=

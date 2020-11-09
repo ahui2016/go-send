@@ -10,21 +10,21 @@ import (
 )
 
 const (
-	DataFolderName   = "gosend_data_folder"
-	FilesFolderName  = "files"
-	DatabaseFileName = "gosend.db"
-	GosendFileExt    = ".send"
-	ThumbFileExt     = ".small"
+	dataFolderName   = "gosend_data_folder"
+	filesFolderName  = "files"
+	databaseFileName = "gosend.db"
+	gosendFileExt    = ".send"
+	thumbFileExt     = ".small"
 	staticFolder     = "static"
 	defaultPassword  = "abc"
 	passwordMaxTry   = 5
 
 	// 99 days, for session
-	MaxAge = 60 * 60 * 24 * 99
+	maxAge = 60 * 60 * 24 * 99
 
-	// DatabaseCapacity 控制数据库总容量，
+	// databaseCapacity 控制数据库总容量，
 	// maxBodySize 控制单个文件的体积。
-	DatabaseCapacity = 1 << 30 // 1GB
+	databaseCapacity = 1 << 30 // 1GB
 
 	// 100 MB, for http.MaxBytesReader
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
@@ -47,25 +47,24 @@ var (
 )
 
 func init() {
-	dataDir = filepath.Join(goutil.UserHomeDir(), DataFolderName)
-	filesDir = filepath.Join(dataDir, FilesFolderName)
-	dbPath = filepath.Join(dataDir, DatabaseFileName)
+	dataDir = filepath.Join(goutil.UserHomeDir(), dataFolderName)
+	filesDir = filepath.Join(dataDir, filesFolderName)
+	dbPath = filepath.Join(dataDir, databaseFileName)
 	fillHTML()
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
 
 	// open the db here, close the db in main().
-	if err := db.Open(MaxAge, DatabaseCapacity, dbPath); err != nil {
-		panic(err)
-	}
+	err := db.Open(maxAge, databaseCapacity, dbPath)
+	goutil.CheckErrorPanic(err)
 }
 
 func localFilePath(id string) string {
-	return filepath.Join(filesDir, id+GosendFileExt)
+	return filepath.Join(filesDir, id+gosendFileExt)
 }
 
 func thumbFilePath(id string) string {
-	return filepath.Join(filesDir, id+ThumbFileExt)
+	return filepath.Join(filesDir, id+thumbFileExt)
 }
 
 func getFileAndThumb(id string) (originFile, thumb string) {
@@ -76,17 +75,13 @@ func getFileAndThumb(id string) (originFile, thumb string) {
 // 目的是方便以字符串的形式把 html 文件直接喂给 http.ResponseWriter.
 func fillHTML() {
 	filePaths, err := goutil.GetFilesByExt(staticFolder, ".html")
-	if err != nil {
-		panic(err)
-	}
+	goutil.CheckErrorFatal(err)
 
 	for _, path := range filePaths {
 		base := filepath.Base(path)
 		name := strings.TrimSuffix(base, ".html")
 		html, err := ioutil.ReadFile(path)
-		if err != nil {
-			panic(err)
-		}
+		goutil.CheckErrorFatal(err)
 		HTML[name] = string(html)
 	}
 }
