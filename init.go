@@ -39,12 +39,12 @@ var (
 	dataDir  string
 	filesDir string
 	dbPath   string
-	db       *database.DB
 )
 
 var (
 	passwordTry = 0
 	HTML        = make(map[string]string)
+	db          = new(database.DB)
 )
 
 func init() {

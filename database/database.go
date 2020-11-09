@@ -105,24 +105,15 @@ func (db *DB) checkTotalSize(addition int64) error {
 	return nil
 }
 
-// increaseTotalSize 用于向数据库添加内容时更新总体积。
-// 应先使用 db.checkTotalSize, 再使用 db.Save, 最后使才使用 db.increaseTotalSize
-func (db *DB) increaseTotalSize(addition int64) error {
+// addTotalSize 用于向数据库添加或删除单项内容时更新总体积。
+// 添加时，应先使用 db.checkTotalSize, 再使用 db.Save, 最后使才使用 db.addTotalSize
+// 删除时，应先获取即将删除项目的体积，再删除，最后使用 db.addTotalSize, 此时 addition 应为负数。
+func (db *DB) addTotalSize(addition int64) error {
 	totalSize, err := db.GetTotalSize()
 	if err != nil {
 		return err
 	}
 	return db.setTotalSize(totalSize + addition)
-}
-
-// reduceTotalSize 用于从数据库删除一条记录时更新 total-size.
-func (db *DB) reduceTotalSize(id string) error {
-	message, err1 := db.getByID(id)
-	totalSize, err2 := db.GetTotalSize()
-	if err := goutil.WrapErrors(err1, err2); err != nil {
-		return err
-	}
-	return db.setTotalSize(totalSize - message.FileSize)
 }
 
 // recountTotalSize 用于一次性删除多个项目时重新计算数据库总体积。
@@ -206,22 +197,23 @@ func (db *DB) Insert(message *Message) error {
 	if err := db.DB.Save(message); err != nil {
 		return err
 	}
-	return db.increaseTotalSize(message.FileSize)
+	return db.addTotalSize(message.FileSize)
 }
 
 // Delete by id
 func (db *DB) Delete(id string) error {
 	db.Lock()
 	defer db.Unlock()
-	if err := db.DB.DeleteStruct(&Message{ID: id}); err != nil {
-		return err
-	}
-	return db.reduceTotalSize(id)
+	message, err1 := db.getByID(id)
+	err2 := db.DB.DeleteStruct(message)
+	err3 := db.addTotalSize(-message.FileSize)
+	return goutil.WrapErrors(err1, err2, err3)
 }
 
-func (db *DB) getByID(id string) (message *Message, err error) {
-	err = db.DB.One("ID", id, &message)
-	return
+func (db *DB) getByID(id string) (*Message, error) {
+	var message Message
+	err := db.DB.One("ID", id, &message)
+	return &message, err
 }
 
 // AllByUpdatedAt .
