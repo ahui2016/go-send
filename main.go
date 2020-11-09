@@ -34,19 +34,19 @@ func main() {
 
 	http.HandleFunc("/send-file", checkLogin(addFilePage))
 	http.HandleFunc("/api/checksum",
-		bodyLimit(checkLogin(checksumHandler)))
+		withDB(bodyLimit(checkLogin(checksumHandler))))
 	http.HandleFunc("/api/upload-file",
-		maxBodyLimit(checkLogin(uploadHandler)))
+		withDB(maxBodyLimit(checkLogin(uploadHandler))))
 
 	http.HandleFunc("/messages", checkLogin(messagesPage))
 	http.HandleFunc("/api/add-text-msg",
-		bodyLimit(checkLogin(addTextMsg)))
-	http.HandleFunc("/api/all", checkLogin(getAllHandler))
+		withDB(bodyLimit(checkLogin(addTextMsg))))
+	http.HandleFunc("/api/all", withDB(checkLogin(getAllHandler)))
 	http.HandleFunc("/api/delete",
-		bodyLimit(checkLogin(deleteHandler)))
+		withDB(bodyLimit(checkLogin(deleteHandler))))
 
 	http.HandleFunc("/api/update-datetime",
-		bodyLimit(checkLogin(updateDatetime)))
+		withDB(bodyLimit(checkLogin(updateDatetime))))
 
 	http.HandleFunc("/api/execute-command",
 		bodyLimit(checkLogin(executeCommand)))
@@ -55,6 +55,7 @@ func main() {
 
 	addr := "127.0.0.1:80"
 	log.Print(addr)
+	log.Print(dbPath)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 

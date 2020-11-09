@@ -27,12 +27,12 @@ var (
 	dataDir  string
 	filesDir string
 	dbPath   string
+	db       *database.DB
 )
 
 var (
 	passwordTry = 0
 	HTML        = make(map[string]string)
-	db          = new(database.DB)
 )
 
 func init() {
@@ -43,10 +43,9 @@ func init() {
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
 
-	// open the db here, close the db in main().
-	if err := db.Open(common.MaxAge, common.DatabaseCapacity, dbPath); err != nil {
-		panic(err)
-	}
+	var err error
+	db, err = database.NewDB(common.MaxAge, common.DatabaseCapacity, dbPath)
+	goutil.CheckErrorFatal(err)
 }
 
 // fillHTML 把读取 html 文件的内容，塞进 HTML (map[string]string)。
