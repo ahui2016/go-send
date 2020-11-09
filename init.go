@@ -10,21 +10,21 @@ import (
 )
 
 const (
-	dataFolderName   = "gosend_data_folder"
-	filesFolderName  = "files"
-	databaseFileName = "gosend.db"
-	gosendFileExt    = ".send"
-	thumbFileExt     = ".small"
+	DataFolderName   = "gosend_data_folder"
+	FilesFolderName  = "files"
+	DatabaseFileName = "gosend.db"
+	GosendFileExt    = ".send"
+	ThumbFileExt     = ".small"
 	staticFolder     = "static"
 	defaultPassword  = "abc"
 	passwordMaxTry   = 5
 
 	// 99 days, for session
-	maxAge = 60 * 60 * 24 * 99
+	MaxAge = 60 * 60 * 24 * 99
 
-	// databaseCapacity 控制数据库总容量，
+	// DatabaseCapacity 控制数据库总容量，
 	// maxBodySize 控制单个文件的体积。
-	databaseCapacity = 1 << 30 // 1GB
+	DatabaseCapacity = 1 << 30 // 1GB
 
 	// 100 MB, for http.MaxBytesReader
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
@@ -47,25 +47,25 @@ var (
 )
 
 func init() {
-	dataDir = filepath.Join(goutil.UserHomeDir(), dataFolderName)
-	filesDir = filepath.Join(dataDir, filesFolderName)
-	dbPath = filepath.Join(dataDir, databaseFileName)
+	dataDir = filepath.Join(goutil.UserHomeDir(), DataFolderName)
+	filesDir = filepath.Join(dataDir, FilesFolderName)
+	dbPath = filepath.Join(dataDir, DatabaseFileName)
 	fillHTML()
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
 
 	// open the db here, close the db in main().
-	if err := db.Open(maxAge, databaseCapacity, dbPath); err != nil {
+	if err := db.Open(MaxAge, DatabaseCapacity, dbPath); err != nil {
 		panic(err)
 	}
 }
 
 func localFilePath(id string) string {
-	return filepath.Join(filesDir, id+gosendFileExt)
+	return filepath.Join(filesDir, id+GosendFileExt)
 }
 
 func thumbFilePath(id string) string {
-	return filepath.Join(filesDir, id+thumbFileExt)
+	return filepath.Join(filesDir, id+ThumbFileExt)
 }
 
 func getFileAndThumb(id string) (originFile, thumb string) {

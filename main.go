@@ -61,7 +61,7 @@ func totalSize(w http.ResponseWriter, r *http.Request) {
 	size, _ := db.GetTotalSize()
 	resp := make(map[string]int64)
 	resp["totalSize"] = size
-	resp["capacity"] = databaseCapacity
+	resp["capacity"] = DatabaseCapacity
 	goutil.JsonResponse(w, resp, 200)
 }
 
@@ -86,14 +86,8 @@ func messagesPage(w http.ResponseWriter, r *http.Request) {
 
 func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	textMsg := strings.TrimSpace(r.FormValue("text-msg"))
-	if textMsg == "" {
-		goutil.JsonMessage(w, "the message is empty", 400)
-	}
-	message, err := db.NewTextMsg(textMsg)
+	message, err := db.InsertTextMsg(textMsg)
 	if goutil.CheckErr(w, err, 500) {
-		return
-	}
-	if goutil.CheckErr(w, db.Insert(message), 500) {
 		return
 	}
 	goutil.JsonResponse(w, message, 200)

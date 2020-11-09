@@ -293,3 +293,26 @@ func (db *DB) UpdateDatetime(id string) error {
 	defer db.Unlock()
 	return db.DB.UpdateField(&Message{ID: id}, "UpdatedAt", goutil.TimeNow())
 }
+
+// LastTextMsg .
+func (db *DB) LastTextMsg() (string, error) {
+	var message Message
+	err := db.DB.Select(q.Eq("Type", model.TextMsg)).
+		OrderBy("UpdatedAt").Reverse().First(&message)
+	if err != nil {
+		return "", err
+	}
+	return message.TextMsg, nil
+}
+
+// InsertTextMsg .
+func (db *DB) InsertTextMsg(textMsg string) (message *Message, err error) {
+	if textMsg == "" {
+		return nil, errors.New("the message is empty")
+	}
+	message, err = db.NewTextMsg(textMsg)
+	if err != nil {
+		return
+	}
+	return message, db.Insert(message)
+}
