@@ -5,26 +5,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ahui2016/go-send/common"
 	"github.com/ahui2016/go-send/database"
 	"github.com/ahui2016/goutil"
 )
 
 const (
-	DataFolderName   = "gosend_data_folder"
-	FilesFolderName  = "files"
-	DatabaseFileName = "gosend.db"
-	GosendFileExt    = ".send"
-	ThumbFileExt     = ".small"
-	staticFolder     = "static"
-	defaultPassword  = "abc"
-	passwordMaxTry   = 5
-
-	// 99 days, for session
-	MaxAge = 60 * 60 * 24 * 99
-
-	// DatabaseCapacity 控制数据库总容量，
-	// maxBodySize 控制单个文件的体积。
-	DatabaseCapacity = 1 << 30 // 1GB
+	staticFolder    = "static"
+	defaultPassword = "abc"
+	passwordMaxTry  = 5
 
 	// 100 MB, for http.MaxBytesReader
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
@@ -47,29 +36,17 @@ var (
 )
 
 func init() {
-	dataDir = filepath.Join(goutil.UserHomeDir(), DataFolderName)
-	filesDir = filepath.Join(dataDir, FilesFolderName)
-	dbPath = filepath.Join(dataDir, DatabaseFileName)
+	dataDir = filepath.Join(goutil.UserHomeDir(), common.DataFolderName)
+	filesDir = filepath.Join(dataDir, common.FilesFolderName)
+	dbPath = filepath.Join(dataDir, common.DatabaseFileName)
 	fillHTML()
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
 
 	// open the db here, close the db in main().
-	if err := db.Open(MaxAge, DatabaseCapacity, dbPath); err != nil {
+	if err := db.Open(common.MaxAge, common.DatabaseCapacity, dbPath); err != nil {
 		panic(err)
 	}
-}
-
-func localFilePath(id string) string {
-	return filepath.Join(filesDir, id+GosendFileExt)
-}
-
-func thumbFilePath(id string) string {
-	return filepath.Join(filesDir, id+ThumbFileExt)
-}
-
-func getFileAndThumb(id string) (originFile, thumb string) {
-	return localFilePath(id), thumbFilePath(id)
 }
 
 // fillHTML 把读取 html 文件的内容，塞进 HTML (map[string]string)。
