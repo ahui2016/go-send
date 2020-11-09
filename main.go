@@ -85,6 +85,9 @@ func messagesPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func addTextMsg(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
 	textMsg := strings.TrimSpace(r.FormValue("text-msg"))
 	message, err := db.InsertTextMsg(textMsg)
 	if goutil.CheckErr(w, err, 500) {
@@ -122,6 +125,9 @@ func checksumHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
 	fileContents, err := goutil.GetFileContents(r)
 	if goutil.CheckErr(w, err, 400) {
 		return
@@ -183,6 +189,9 @@ func writeFile(message *Message, fileContents []byte) error {
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
 	id, ok := goutil.GetID(w, r)
 	if !ok {
 		return
@@ -195,6 +204,9 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func executeCommand(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
 	switch command := r.FormValue("command"); command {
 	case "zip-all-files":
 		message, err := zipAllFiles()
@@ -308,6 +320,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateDatetime(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
 	id, ok := goutil.GetID(w, r)
 	if !ok {
 		return

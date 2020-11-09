@@ -29,6 +29,8 @@ type DB struct {
 	capacity int64
 	DB       *storm.DB
 	Sess     *session.Manager
+
+	// 只在 package database 外部使用锁，不在 package database 内部使用锁。
 	sync.Mutex
 }
 
@@ -173,9 +175,6 @@ func (db *DB) newMessage(msgType model.MsgType) (*Message, error) {
 }
 
 func (db *DB) getNextID() (nextID IncreaseID, err error) {
-	db.Lock()
-	defer db.Unlock()
-
 	currentID, err := db.getCurrentID()
 	if err != nil {
 		return nextID, err
@@ -189,8 +188,6 @@ func (db *DB) getNextID() (nextID IncreaseID, err error) {
 
 // Insert .
 func (db *DB) Insert(message *Message) error {
-	db.Lock()
-	defer db.Unlock()
 	if err := db.checkTotalSize(message.FileSize); err != nil {
 		return err
 	}
@@ -202,8 +199,6 @@ func (db *DB) Insert(message *Message) error {
 
 // Delete by id
 func (db *DB) Delete(id string) error {
-	db.Lock()
-	defer db.Unlock()
 	message, err1 := db.getByID(id)
 	err2 := db.DB.DeleteStruct(message)
 	err3 := db.addTotalSize(-message.FileSize)
@@ -276,8 +271,6 @@ func (db *DB) DeleteMessages(messages []Message) error {
 
 // UpdateDatetime ...
 func (db *DB) UpdateDatetime(id string) error {
-	db.Lock()
-	defer db.Unlock()
 	return db.DB.UpdateField(&Message{ID: id}, "UpdatedAt", goutil.TimeNow())
 }
 
