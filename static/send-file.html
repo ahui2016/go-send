@@ -53,8 +53,6 @@
         </div>  
       </nav>
 
-      <div class="text-right" id="total-size"></div>
-
       <form id="file-form" style="margin-top: 50px;" autocomplete="off">
 
         <div id="custom-file-input" class="custom-file mb-3">
@@ -160,6 +158,8 @@
         </template>
       </div>
 
+      <div class="text-center" id="total-size" style="margin: 50px 0 50px 0;"></div>
+
     </div>
 
 <script>
@@ -178,6 +178,7 @@ $('#send-btn').click(event => {
 function uploadOneByOne(i) {
   if (i <= 0) {
     insertInfoAlert('上传结束，如果如下所示。');
+    refreshTotalSize();
     return;
   }
   i--;
@@ -333,13 +334,13 @@ function hideForm() {
   }
 })();
 
-showTotalSize();
-function showTotalSize() {
+refreshTotalSize();
+function refreshTotalSize() {
   ajaxGet("/totalSize", null, function() {
     if (this.status == 200) {
-      let 已用 = fileSizeToString(this.response.totalSize);
+      let 已用 = fileSizeToString(this.response.totalSize, 0);
       let 剩余可用 = fileSizeToString(
-        this.response.capacity - this.response.totalSize);
+        this.response.capacity - this.response.totalSize, 0);
       $('#total-size').text(`已用: ${已用}, 剩余: ${剩余可用}`);
     } else {
       let errMsg = !this.response ? this.status : this.response.message;

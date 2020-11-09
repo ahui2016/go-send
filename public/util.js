@@ -103,12 +103,15 @@ function insertAlert(type, msg, where) {
 }
 
 // 把文件大小换算为 KB 或 MB
-function fileSizeToString(fileSize) {
+function fileSizeToString(fileSize, fixed) {
+  if (fixed == null) {
+    fixed = 2
+  }
   sizeMB = fileSize / 1024 / 1024;
   if (sizeMB < 1) {
-      return `${(sizeMB * 1024).toFixed(2)} KB`;
+      return `${(sizeMB * 1024).toFixed(fixed)} KB`;
   }
-  return `${sizeMB.toFixed(2)} MB`;
+  return `${sizeMB.toFixed(fixed)} MB`;
 }
 
 // 把标签文本框内的字符串转化为数组。
