@@ -50,9 +50,19 @@ func main() {
 	http.HandleFunc("/api/execute-command",
 		bodyLimit(checkLogin(executeCommand)))
 
+	http.HandleFunc("/totalSize", totalSize)
+
 	addr := "127.0.0.1:80"
 	log.Print(addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+func totalSize(w http.ResponseWriter, r *http.Request) {
+	size, _ := db.GetTotalSize()
+	resp := make(map[string]int64)
+	resp["totalSize"] = size
+	resp["capacity"] = databaseCapacity
+	goutil.JsonResponse(w, resp, 200)
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +197,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
-	goutil.CheckErr(w, db.DB.DeleteStruct(&Message{ID: id}), 500)
+	goutil.CheckErr(w, db.Delete(id), 500)
 }
 
 func executeCommand(w http.ResponseWriter, r *http.Request) {
@@ -232,7 +242,7 @@ func zipAllFiles() (message *Message, err error) {
 		return
 	}
 	message.FileSize = stat.Size()
-	err = db.Save(message)
+	err = db.Insert(message)
 	return
 }
 

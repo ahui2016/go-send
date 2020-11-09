@@ -2,7 +2,6 @@ package database
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"sync"
 
@@ -54,21 +53,7 @@ func (db *DB) createIndexes() error {
 	err1 := db.DB.Init(&Message{})
 	err2 := db.initFirstID()
 	err3 := db.initTotalSize()
-	return WrapErrors(err1, err2, err3)
-}
-
-// WrapErrors 把多个错误合并为一个错误.
-func WrapErrors(allErrors ...error) (wrapped error) {
-	for _, err := range allErrors {
-		if err != nil {
-			if wrapped == nil {
-				wrapped = err
-			} else {
-				wrapped = fmt.Errorf("%v | %v", err, wrapped)
-			}
-		}
-	}
-	return
+	return goutil.WrapErrors(err1, err2, err3)
 }
 
 func (db *DB) initFirstID() (err error) {
@@ -84,7 +69,7 @@ func (db *DB) initFirstID() (err error) {
 }
 
 func (db *DB) initTotalSize() (err error) {
-	_, err = db.getTotalSize()
+	_, err = db.GetTotalSize()
 	if err != nil && err != storm.ErrNotFound {
 		return
 	}
@@ -99,13 +84,60 @@ func (db *DB) getCurrentID() (id IncreaseID, err error) {
 	return
 }
 
-func (db *DB) getTotalSize() (size int64, err error) {
+// GetTotalSize .
+func (db *DB) GetTotalSize() (size int64, err error) {
 	err = db.DB.Get(metadataBucket, totalSizeKey, &size)
 	return
 }
 
 func (db *DB) setTotalSize(size int64) error {
 	return db.DB.Set(metadataBucket, totalSizeKey, size)
+}
+
+func (db *DB) checkTotalSize(addition int64) error {
+	totalSize, err := db.GetTotalSize()
+	if err != nil {
+		return err
+	}
+	if totalSize+addition > db.capacity {
+		return errors.New("超过数据库总容量上限")
+	}
+	return nil
+}
+
+// increaseTotalSize 用于向数据库添加内容时更新总体积。
+// 应先使用 db.checkTotalSize, 再使用 db.Save, 最后使才使用 db.increaseTotalSize
+func (db *DB) increaseTotalSize(addition int64) error {
+	totalSize, err := db.GetTotalSize()
+	if err != nil {
+		return err
+	}
+	return db.setTotalSize(totalSize + addition)
+}
+
+// reduceTotalSize 用于从数据库删除一条记录时更新 total-size.
+func (db *DB) reduceTotalSize(id string) error {
+	message, err1 := db.getByID(id)
+	totalSize, err2 := db.GetTotalSize()
+	if err := goutil.WrapErrors(err1, err2); err != nil {
+		return err
+	}
+	return db.setTotalSize(totalSize - message.FileSize)
+}
+
+// recountTotalSize 用于一次性删除多个项目时重新计算数据库总体积。
+func (db *DB) recountTotalSize() error {
+	var totalSize int64 = 0
+	err := db.DB.Select(q.True()).Each(
+		new(Message), func(record interface{}) error {
+			message := record.(*Message)
+			totalSize += message.FileSize
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+	return db.setTotalSize(totalSize)
 }
 
 // Close .
@@ -171,44 +203,30 @@ func (db *DB) getNextID() (nextID IncreaseID, err error) {
 
 // Insert .
 func (db *DB) Insert(message *Message) error {
-	return db.Save(message)
-}
-
-// Save wraps storm.DB.Save with a lock.
-func (db *DB) Save(message *Message) error {
 	db.Lock()
 	defer db.Unlock()
-	if err := db.increaseTotalSize(message.FileSize); err != nil {
+	if err := db.checkTotalSize(message.FileSize); err != nil {
 		return err
 	}
-	return db.DB.Save(message)
+	if err := db.DB.Save(message); err != nil {
+		return err
+	}
+	return db.increaseTotalSize(message.FileSize)
 }
 
-// increaseTotalSize 用于向数据库添加内容时更新总体积。
-func (db *DB) increaseTotalSize(addition int64) error {
-	totalSize, err := db.getTotalSize()
-	if err != nil {
+// Delete by id
+func (db *DB) Delete(id string) error {
+	db.Lock()
+	defer db.Unlock()
+	if err := db.DB.DeleteStruct(&Message{ID: id}); err != nil {
 		return err
 	}
-	if totalSize+addition > db.capacity {
-		return errors.New("超过数据库总容量上限")
-	}
-	return db.setTotalSize(totalSize + addition)
+	return db.reduceTotalSize(id)
 }
 
-// recountTotalSize 用于一次性删除多个项目时重新计算数据库总体积。
-func (db *DB) recountTotalSize() error {
-	var totalSize int64 = 0
-	err := db.DB.Select(q.True()).Each(
-		new(Message), func(record interface{}) error {
-			message := record.(*Message)
-			totalSize += message.FileSize
-			return nil
-		})
-	if err != nil {
-		return err
-	}
-	return db.setTotalSize(totalSize)
+func (db *DB) getByID(id string) (message *Message, err error) {
+	err = db.DB.One("ID", id, &message)
+	return
 }
 
 // AllByUpdatedAt .

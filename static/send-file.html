@@ -53,6 +53,8 @@
         </div>  
       </nav>
 
+      <div class="text-right" id="total-size"></div>
+
       <form id="file-form" style="margin-top: 50px;" autocomplete="off">
 
         <div id="custom-file-input" class="custom-file mb-3">
@@ -330,6 +332,21 @@ function hideForm() {
     })
   }
 })();
+
+showTotalSize();
+function showTotalSize() {
+  ajaxGet("/totalSize", null, function() {
+    if (this.status == 200) {
+      let 已用 = fileSizeToString(this.response.totalSize);
+      let 剩余可用 = fileSizeToString(
+        this.response.capacity - this.response.totalSize);
+      $('#total-size').text(`已用: ${已用}, 剩余: ${剩余可用}`);
+    } else {
+      let errMsg = !this.response ? this.status : this.response.message;
+      console.log(errMsg);
+    }
+  });
+}
 
 $('.NavbarBtn').tooltip();
 

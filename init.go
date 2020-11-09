@@ -18,10 +18,13 @@ const (
 	staticFolder     = "static"
 	defaultPassword  = "abc"
 	passwordMaxTry   = 5
-	databaseCapacity = 1 << 30 // 1GB
 
 	// 99 days, for session
 	maxAge = 60 * 60 * 24 * 99
+
+	// databaseCapacity 控制数据库总容量，
+	// maxBodySize 控制单个文件的体积。
+	databaseCapacity = 1 << 30 // 1GB
 
 	// 100 MB, for http.MaxBytesReader
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
