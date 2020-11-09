@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ahui2016/go-send/common"
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
 	"github.com/ahui2016/goutil/zipper"
@@ -151,7 +152,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	err = ioutil.WriteFile(thumbFilePath(message.ID), thumbFile, 0600)
+	err = ioutil.WriteFile(common.ThumbFilePath(filesDir, message.ID), thumbFile, 0600)
 	goutil.CheckErr(w, err, 500)
 }
 
@@ -166,7 +167,7 @@ func getThumbnail(r *http.Request) ([]byte, error) {
 }
 
 func writeFile(message *Message, fileContents []byte) error {
-	file, thumb := getFileAndThumb(message.ID)
+	file, thumb := common.GetFileAndThumb(filesDir, message.ID)
 	err := ioutil.WriteFile(file, fileContents, 0600)
 	if err != nil {
 		return err
@@ -187,7 +188,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	err := goutil.DeleteFiles(getFileAndThumb(id))
+	err := goutil.DeleteFiles(common.GetFileAndThumb(filesDir, id))
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
@@ -226,7 +227,7 @@ func zipAllFiles() (message *Message, err error) {
 	if err != nil {
 		return
 	}
-	zipFilePath := localFilePath(message.ID)
+	zipFilePath := common.LocalFilePath(filesDir, message.ID)
 	err = zipper.Create(zipFilePath, zipperFiles(allFiles))
 	if err != nil {
 		return
@@ -249,7 +250,7 @@ func zipperFiles(fileMessages []Message) (files []zipper.File) {
 		}
 		file := zipper.File{
 			Name: message.FileName,
-			Path: localFilePath(message.ID),
+			Path: common.LocalFilePath(filesDir, message.ID),
 		}
 		files = append(files, file)
 	}
@@ -281,7 +282,7 @@ func deleteAllFiles() error {
 func deleteFilesAndThumb(files []Message) error {
 	var filePaths []string
 	for _, file := range files {
-		originFile, thumb := getFileAndThumb(file.ID)
+		originFile, thumb := common.GetFileAndThumb(filesDir, file.ID)
 		filePaths = append(filePaths, originFile, thumb)
 	}
 	return goutil.DeleteFiles(filePaths...)

@@ -1,4 +1,4 @@
-package model
+package model // import "github.com/ahui2016/go-send/model"
 
 import (
 	"errors"

@@ -1,13 +1,12 @@
-package database
+package database // import "github.com/ahui2016/go-send/database"
 
 import (
 	"errors"
-	"log"
 	"sync"
 
 	"github.com/ahui2016/go-send/model"
-	"github.com/ahui2016/go-send/session"
 	"github.com/ahui2016/goutil"
+	"github.com/ahui2016/goutil/session"
 	"github.com/asdine/storm/v3"
 	"github.com/asdine/storm/v3/q"
 )
@@ -33,27 +32,41 @@ type DB struct {
 	sync.Mutex
 }
 
-// Open .
-func (db *DB) Open(maxAge int, cap int64, dbPath string) (err error) {
-	if db.DB, err = storm.Open(dbPath); err != nil {
-		return err
+// NewDB 生成一个已初始化的 db (db.DB 已关闭).
+// 程序开始运行时在 init.go 里执行一次 NewDB, 后续在 main.go 使用 db.Open
+func NewDB(maxAge int, cap int64, dbPath string) (*DB, error) {
+	stormDB, err := storm.Open(dbPath)
+	if err != nil {
+		return nil, err
 	}
-	db.path = dbPath
-	db.capacity = cap
-	db.Sess = session.NewManager(maxAge)
-	if err := db.createIndexes(); err != nil {
-		return err
-	}
-	log.Print(db.path)
-	return nil
-}
+	defer stormDB.Close()
 
-// 创建 bucket 和索引，并初始化数据库状态.
-func (db *DB) createIndexes() error {
-	err1 := db.DB.Init(&Message{})
+	db := &DB{
+		path:     dbPath,
+		capacity: cap,
+		DB:       stormDB,
+		Sess:     session.NewManager(maxAge),
+	}
+	err1 := db.createIndexes()
 	err2 := db.initFirstID()
 	err3 := db.initTotalSize()
-	return goutil.WrapErrors(err1, err2, err3)
+	return db, goutil.WrapErrors(err1, err2, err3)
+}
+
+// Open 后应紧接 defer db.Close()
+func (db *DB) Open() (err error) {
+	db.DB, err = storm.Open(db.path)
+	return
+}
+
+// Close 只是 db.DB.Close(), 不清空 db 里的其它部分。
+func (db *DB) Close() error {
+	return db.DB.Close()
+}
+
+// 创建 bucket 和索引
+func (db *DB) createIndexes() error {
+	return db.DB.Init(&Message{})
 }
 
 func (db *DB) initFirstID() (err error) {
@@ -138,11 +151,6 @@ func (db *DB) recountTotalSize() error {
 		return err
 	}
 	return db.setTotalSize(totalSize)
-}
-
-// Close .
-func (db *DB) Close() error {
-	return db.DB.Close()
 }
 
 // NewTextMsg .
