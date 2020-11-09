@@ -1,4 +1,4 @@
-package common
+package common // import "github.com/ahui2016/go-send/common"
 
 import "path/filepath"
 

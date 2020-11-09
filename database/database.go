@@ -1,4 +1,4 @@
-package database
+package database // import "github.com/ahui2016/go-send/database"
 
 import (
 	"errors"
@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/ahui2016/go-send/model"
-	"github.com/ahui2016/go-send/session"
 	"github.com/ahui2016/goutil"
+	"github.com/ahui2016/goutil/session"
 	"github.com/asdine/storm/v3"
 	"github.com/asdine/storm/v3/q"
 )
