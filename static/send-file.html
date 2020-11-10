@@ -336,7 +336,7 @@ function hideForm() {
 
 refreshTotalSize();
 function refreshTotalSize() {
-  ajaxGet("/totalSize", null, function() {
+  ajaxGet("/api/total-size", null, function() {
     if (this.status == 200) {
       let 已用 = fileSizeToString(this.response.totalSize, 0);
       let 剩余可用 = fileSizeToString(
@@ -352,9 +352,6 @@ function refreshTotalSize() {
 $('.NavbarBtn').tooltip();
 
 $('#file-input').focus();
-
-// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video
-// https://stackoverflow.com/questions/32699721/javascript-extract-video-frames-reliably
 
       </script>
     </body>

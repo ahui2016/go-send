@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ahui2016/go-send/model"
+	"github.com/ahui2016/go-send/pass"
 	"github.com/ahui2016/goutil"
 	"github.com/ahui2016/goutil/zipper"
 )
@@ -32,37 +33,22 @@ func main() {
 	http.HandleFunc("/api/login", bodyLimit(loginHandler))
 
 	http.HandleFunc("/send-file", checkLogin(addFilePage))
-	http.HandleFunc("/api/checksum",
-		bodyLimit(checkLogin(checksumHandler)))
-	http.HandleFunc("/api/upload-file",
-		maxBodyLimit(checkLogin(uploadHandler)))
+	http.HandleFunc("/api/checksum", bodyLimit(checkLogin(checksumHandler)))
+	http.HandleFunc("/api/upload-file", maxBodyLimit(checkLogin(uploadHandler)))
 
 	http.HandleFunc("/messages", checkLogin(messagesPage))
-	http.HandleFunc("/api/add-text-msg",
-		bodyLimit(checkLogin(addTextMsg)))
-	http.HandleFunc("/api/all", checkLogin(getAllHandler))
-	http.HandleFunc("/api/delete",
-		bodyLimit(checkLogin(deleteHandler)))
+	http.HandleFunc("/api/add-text-msg", bodyLimit(checkLogin(addTextMsg)))
+	http.HandleFunc("/api/last-text", bodyLimit(checkLogin(getLastText)))
+	http.HandleFunc("/api/all", bodyLimit(checkLogin(getAllHandler)))
+	http.HandleFunc("/api/delete", bodyLimit(checkLogin(deleteHandler)))
 
-	http.HandleFunc("/api/update-datetime",
-		bodyLimit(checkLogin(updateDatetime)))
-
-	http.HandleFunc("/api/execute-command",
-		bodyLimit(checkLogin(executeCommand)))
-
-	http.HandleFunc("/totalSize", totalSize)
+	http.HandleFunc("/api/update-datetime", bodyLimit(checkLogin(updateDatetime)))
+	http.HandleFunc("/api/execute-command", bodyLimit(checkLogin(executeCommand)))
+	http.HandleFunc("/api/total-size", bodyLimit(checkLogin(getTotalSize)))
 
 	addr := "127.0.0.1:80"
 	log.Print(addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
-}
-
-func totalSize(w http.ResponseWriter, r *http.Request) {
-	size, _ := db.GetTotalSize()
-	resp := make(map[string]int64)
-	resp["totalSize"] = size
-	resp["capacity"] = databaseCapacity
-	goutil.JsonResponse(w, resp, 200)
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -305,8 +291,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	password := r.FormValue("password")
-	if password != defaultPassword {
+	if r.FormValue("password") != pass.Word {
 		passwordTry++
 		if checkPasswordTry(w) {
 			return
@@ -328,4 +313,20 @@ func updateDatetime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	goutil.CheckErr(w, db.UpdateDatetime(id), 500)
+}
+
+func getTotalSize(w http.ResponseWriter, r *http.Request) {
+	size, _ := db.GetTotalSize()
+	resp := make(map[string]int64)
+	resp["totalSize"] = size
+	resp["capacity"] = databaseCapacity
+	goutil.JsonResponse(w, resp, 200)
+}
+
+func getLastText(w http.ResponseWriter, r *http.Request) {
+	textMsg, err := db.LastTextMsg()
+	if goutil.CheckErr(w, err, 500) {
+		return
+	}
+	goutil.JsonMessage(w, textMsg, 200)
 }

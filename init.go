@@ -17,7 +17,6 @@ const (
 	gosendFileExt    = ".send"
 	thumbFileExt     = ".small"
 	staticFolder     = "static"
-	defaultPassword  = "abc"
 	passwordMaxTry   = 5
 
 	// 99 days, for session
@@ -31,8 +30,8 @@ const (
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
 	maxBodySize int64 = 1024 * 1024 * 100
 
-	// 3 MB, 普通请求（没有文件的请求）需要限制更严格。
-	defaultBodySize int64 = 3 << 20
+	// 1 MB, 普通请求（没有文件的请求）需要限制更严格。
+	defaultBodySize int64 = 1 << 20
 )
 
 var (
