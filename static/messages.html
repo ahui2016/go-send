@@ -465,7 +465,7 @@ $('#execute-btn').click(event => {
       if (this.response && this.response.ID) {
         $('html').animate({scrollTop:0},'50');
         let message = this.response;
-        let item = insertTextMsg(message);
+        let item = insertFileMsg(message);
         doAfterInsert(item, message);
         return;
       }

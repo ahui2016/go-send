@@ -293,3 +293,41 @@ let ItemID = {
     return 'item-' + this.n;
   }
 };
+
+function getThumbByFile(file) {
+  return getThumbByExt(typeOfFile(file));
+}
+
+function typeOfFile(file) {
+  let ext = file.name.split('.').pop();
+  let filetype;
+  if (["zip", "rar", "7z", "gz", "tar", "bz", "bz2", "xz"].indexOf(ext) >= 0) {
+    filetype = "compressed/" + ext;
+  } else if (["md", "xml", "html", "xhtml", "htm"].indexOf(ext) >= 0) {
+    filetype = "text/" + ext
+  } else if (["doc", "docx", "ppt", "pptx", "rtf", "xls", "xlsx"].indexOf(ext) >= 0) {
+    filetype = "office/" + ext
+  } else if (["epub", "pdf", "mobi", "azw", "azw3", "djvu"].indexOf(ext) >= 0) {
+    filetype = "ebook/" + ext
+  } else {
+    filetype = file.type;
+  }
+	return filetype
+}
+
+function getThumbByExt(ext) {
+  let prefix = ext.split('/').shift();
+  switch (prefix) {
+    case 'compressed':
+      return '/public/icons/file-earmark-zip.jpg';
+    case 'text':
+      return '/public/icons/file-earmark-text.jpg';
+    case 'office':
+    case 'ebook':
+      return '/public/icons/file-earmark-richtext.jpg';
+    case 'audio':
+      return '/public/icons/file-earmark-music.jpg';
+    default:
+      return '/public/icons/file-earmark-binary.jpg';
+  }
+}

@@ -2,6 +2,8 @@ package model // import "github.com/ahui2016/go-send/model"
 
 import (
 	"errors"
+	"mime"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -71,13 +73,30 @@ func (message *Message) SetFileNameType(filename string) error {
 		return errors.New("filename is too short")
 	}
 	message.FileName = filename
-	message.FileType = goutil.TypeByFilename(filename)
+	message.FileType = typeByFilename(filename)
 	return nil
 }
 
 // IsImage .
 func (message *Message) IsImage() bool {
 	return strings.HasPrefix(message.FileType, "image")
+}
+
+func typeByFilename(filename string) (filetype string) {
+	ext := strings.ToLower(filepath.Ext(filename))
+	filetype = mime.TypeByExtension(ext)
+	ext = ext[1:]
+	switch ext {
+	case "zip", "rar", "7z", "gz", "tar", "bz", "bz2", "xz":
+		filetype = "compressed/" + ext
+	case "md", "xml", "html", "xhtml", "htm":
+		filetype = "text/" + ext
+	case "doc", "docx", "ppt", "pptx", "rtf", "xls", "xlsx":
+		filetype = "office/" + ext
+	case "epub", "pdf", "mobi", "azw", "azw3", "djvu":
+		filetype = "ebook/" + ext
+	}
+	return filetype
 }
 
 // IncreaseID 用来记录自动生成 ID 的状态，便于生成特有的自增 ID.
