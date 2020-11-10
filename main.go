@@ -328,5 +328,5 @@ func getLastText(w http.ResponseWriter, r *http.Request) {
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
-	goutil.JsonMessage(w, textMsg, 200)
+	fmt.Fprint(w, textMsg)
 }
