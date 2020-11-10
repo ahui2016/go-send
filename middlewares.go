@@ -33,6 +33,9 @@ func setBodySize(fn http.HandlerFunc, max int64) http.HandlerFunc {
 
 // Check the Content-Length header immediately when the request comes in.
 func checkContentLength(w http.ResponseWriter, r *http.Request, length int64) error {
+	if r.Header.Get("Content-Length") == "" {
+		return nil
+	}
 	size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
 	if err != nil {
 		return err
