@@ -150,7 +150,7 @@
         <template id="file-msg-tmpl">
           <div class="card mb-3">
             <div class="row no-gutters">
-              <div class="col-3">
+              <div class="col-2">
                 <a class="LinkToBigImg">
                   <img class="card-img img-thumbnail">
                 </a>
@@ -386,8 +386,15 @@ function insertFileMsg(message) {
   // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
   item.insertAfter('#file-msg-tmpl');
 
+  let file = {name: message.FileName, type: message.FileType};
+  if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+    item.find('.card-img').attr('src', thumbURL(message.ID));
+  } else {
+    let thumbUrl = getThumbByFile(file);
+    item.find('.card-img').attr('src', thumbUrl);
+  }
+
   item.find('.card-text').text(message.FileName);
-  item.find('.card-img').attr('src', thumbURL(message.ID));
   item.find('.LinkToBigImg').attr('href', fileURL(message.ID));
   item.find('.FileSize').text(fileSizeToString(message.FileSize));
   item.find('.DownloadButton')
