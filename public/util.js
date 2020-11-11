@@ -295,7 +295,7 @@ let ItemID = {
 };
 
 function getThumbByFile(file) {
-  return getThumbByExt(typeOfFile(file));
+  return getThumbByFiletype(typeOfFile(file));
 }
 
 function typeOfFile(file) {
@@ -315,19 +315,32 @@ function typeOfFile(file) {
 	return filetype
 }
 
-function getThumbByExt(ext) {
-  let prefix = ext.split('/').shift();
-  switch (prefix) {
-    case 'compressed':
-      return '/public/icons/file-earmark-zip.jpg';
-    case 'text':
-      return '/public/icons/file-earmark-text.jpg';
-    case 'office':
-    case 'ebook':
-      return '/public/icons/file-earmark-richtext.jpg';
-    case 'audio':
-      return '/public/icons/file-earmark-music.jpg';
+function getThumbByFiletype(filetype) {
+  let prefix = filetype.split('/').shift();
+  let suffix = filetype.split('/').pop();
+  switch (suffix) {
+    case 'doc':
+    case 'docx':
+      return '/public/icons/file-earmark-word.jpg';
+    case 'xls':
+    case 'xlsx':
+      return '/public/icons/file-earmark-excel.jpg';
+    case 'ppt':
+    case 'pptx':
+      return '/public/icons/file-earmark-ppt.jpg';
     default:
-      return '/public/icons/file-earmark-binary.jpg';
+      switch (prefix) {
+        case 'office':
+        case 'ebook':
+          return '/public/icons/file-earmark-richtext.jpg';
+        case 'compressed':
+          return '/public/icons/file-earmark-zip.jpg';
+        case 'text':
+          return '/public/icons/file-earmark-text.jpg';
+        case 'audio':
+          return '/public/icons/file-earmark-music.jpg';
+        default:
+          return '/public/icons/file-earmark-binary.jpg';
+      }    
   }
 }
