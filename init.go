@@ -14,10 +14,12 @@ const (
 	dataFolderName   = "gosend_data_folder"
 	filesFolderName  = "files"
 	databaseFileName = "gosend.db"
+	passwordFileName = "password"
 	gosendFileExt    = ".send"
 	thumbFileExt     = ".small"
 	staticFolder     = "static"
 	passwordMaxTry   = 5
+	defaultPassowrd  = "abc"
 
 	// 99 days, for session
 	maxAge = 60 * 60 * 24 * 99
@@ -35,9 +37,11 @@ const (
 )
 
 var (
-	dataDir  string
-	filesDir string
-	dbPath   string
+	dataDir       string
+	filesDir      string
+	dbPath        string
+	passwordPath  string
+	localPassword string
 )
 
 var (
@@ -50,14 +54,27 @@ func init() {
 	dataDir = filepath.Join(goutil.UserHomeDir(), dataFolderName)
 	filesDir = filepath.Join(dataDir, filesFolderName)
 	dbPath = filepath.Join(dataDir, databaseFileName)
-	fillHTML()
+	passwordPath = filepath.Join(dataDir, passwordFileName)
+
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
+
+	fillHTML()
+	setLocalPassword()
 
 	// open the db here, close the db in main().
 	err := db.Open(maxAge, databaseCapacity, dbPath)
 	goutil.CheckErrorPanic(err)
 	log.Print(dbPath)
+}
+
+func setLocalPassword() {
+	pw, err := ioutil.ReadFile(passwordPath)
+	if err != nil || len(pw) == 0 {
+		localPassword = defaultPassowrd
+		return
+	}
+	localPassword = string(pw)
 }
 
 func localFilePath(id string) string {

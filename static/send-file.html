@@ -319,7 +319,7 @@ function refreshTotalSize() {
       let 已用 = fileSizeToString(this.response.totalSize, 0);
       let 剩余可用 = fileSizeToString(
         this.response.capacity - this.response.totalSize, 0);
-      $('#total-size').text(`已用: ${已用}, 剩余: ${剩余可用}`);
+      $('#total-size').text(`已用: ${已用}, 剩余可用: ${剩余可用}`);
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
       console.log(errMsg);

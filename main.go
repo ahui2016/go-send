@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/ahui2016/go-send/model"
-	"github.com/ahui2016/go-send/pass"
 	"github.com/ahui2016/goutil"
 	"github.com/ahui2016/goutil/zipper"
 )
@@ -291,7 +290,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.FormValue("password") != pass.Word {
+	if r.FormValue("password") != localPassword {
 		passwordTry++
 		if checkPasswordTry(w) {
 			return
