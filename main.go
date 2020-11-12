@@ -45,9 +45,8 @@ func main() {
 	http.HandleFunc("/api/execute-command", bodyLimit(checkLogin(executeCommand)))
 	http.HandleFunc("/api/total-size", bodyLimit(checkLogin(getTotalSize)))
 
-	addr := "127.0.0.1:80"
-	log.Print(addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Print(config.Address)
+	log.Fatal(http.ListenAndServe(config.Address, nil))
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -290,7 +289,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.FormValue("password") != localPassword {
+	if r.FormValue("password") != config.Password {
 		passwordTry++
 		if checkPasswordTry(w) {
 			return

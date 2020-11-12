@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -14,12 +15,13 @@ const (
 	dataFolderName   = "gosend_data_folder"
 	filesFolderName  = "files"
 	databaseFileName = "gosend.db"
-	passwordFileName = "password"
+	configFileName   = "config"
 	gosendFileExt    = ".send"
 	thumbFileExt     = ".small"
 	staticFolder     = "static"
 	passwordMaxTry   = 5
 	defaultPassowrd  = "abc"
+	defaultAddress   = "127.0.0.1:80"
 
 	// 99 days, for session
 	maxAge = 60 * 60 * 24 * 99
@@ -37,30 +39,31 @@ const (
 )
 
 var (
-	dataDir       string
-	filesDir      string
-	dbPath        string
-	passwordPath  string
-	localPassword string
+	config Config
 )
 
 var (
+	dataDir     = filepath.Join(goutil.UserHomeDir(), dataFolderName)
+	filesDir    = filepath.Join(dataDir, filesFolderName)
+	dbPath      = filepath.Join(dataDir, databaseFileName)
+	configPath  = filepath.Join(dataDir, configFileName)
 	passwordTry = 0
 	HTML        = make(map[string]string)
 	db          = new(database.DB)
 )
 
-func init() {
-	dataDir = filepath.Join(goutil.UserHomeDir(), dataFolderName)
-	filesDir = filepath.Join(dataDir, filesFolderName)
-	dbPath = filepath.Join(dataDir, databaseFileName)
-	passwordPath = filepath.Join(dataDir, passwordFileName)
+// Config .
+type Config struct {
+	Password string
+	Address  string
+}
 
+func init() {
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
 
 	fillHTML()
-	setLocalPassword()
+	setConfig()
 
 	// open the db here, close the db in main().
 	err := db.Open(maxAge, databaseCapacity, dbPath)
@@ -68,13 +71,22 @@ func init() {
 	log.Print(dbPath)
 }
 
-func setLocalPassword() {
-	pw, err := ioutil.ReadFile(passwordPath)
-	if err != nil || len(pw) == 0 {
-		localPassword = defaultPassowrd
+func setConfig() {
+	configJSON, err := ioutil.ReadFile(configPath)
+
+	// configPath 没有文件或内容为空
+	if err != nil || len(configJSON) == 0 {
+		config.Password = defaultPassowrd
+		config.Address = defaultAddress
+		configJSON, err := json.MarshalIndent(config, "", "    ")
+		goutil.CheckErrorFatal(err)
+		goutil.CheckErrorFatal(
+			ioutil.WriteFile(configPath, configJSON, 0600))
 		return
 	}
-	localPassword = string(pw)
+
+	// configPath 有内容
+	goutil.CheckErrorFatal(json.Unmarshal(configJSON, &config))
 }
 
 func localFilePath(id string) string {
