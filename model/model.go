@@ -61,8 +61,13 @@ func NewMessage(id string, msgType MsgType) *Message {
 
 // SetTextMsg 同时更新 TextMsg 和 FileSize,
 // 注意不可直接设置 TextMsg, 每次都应该使用 SetTextMsg 以确保同时设置 FileSize.
-func (message *Message) SetTextMsg(textMsg string) {
-
+func (message *Message) SetTextMsg(textMsg string) error {
+	textMsg = strings.TrimSpace(textMsg)
+	if textMsg == "" {
+		return errors.New("the message is empty")
+	}
+	message.TextMsg = textMsg
+	message.FileSize = int64(len(textMsg))
 }
 
 // SetFileNameType 同时设置 FileName 和 FileType.

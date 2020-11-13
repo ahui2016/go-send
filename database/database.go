@@ -3,12 +3,22 @@ package database // import "github.com/ahui2016/go-send/database"
 import (
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
 	"github.com/ahui2016/goutil/session"
 	"github.com/asdine/storm/v3"
 	"github.com/asdine/storm/v3/q"
+)
+
+const (
+
+	// 数据库条目数上限
+	countLimit = 100
+
+	// 文件的最长保存时间
+	keepAlive = time.Hour * 24 * 30 // 30 days
 )
 
 // 用来保存数据库的当前状态.
@@ -139,7 +149,9 @@ func (db *DB) NewTextMsg(textMsg string) (*Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	message.TextMsg = textMsg
+	if err := message.SetTextMsg(textMsg); err != nil {
+		return nil, err
+	}
 	return message, nil
 }
 
@@ -190,6 +202,10 @@ func (db *DB) getNextID() (nextID IncreaseID, err error) {
 func (db *DB) Insert(message *Message) error {
 	if err := db.checkTotalSize(message.FileSize); err != nil {
 		return err
+	}
+	_, err := db.getByID(message.ID)
+	if err == nil {
+		return errors.New("id: " + message.ID + " already exists")
 	}
 	if err := db.DB.Save(message); err != nil {
 		return err
@@ -287,11 +303,7 @@ func (db *DB) LastTextMsg() (string, error) {
 
 // InsertTextMsg .
 func (db *DB) InsertTextMsg(textMsg string) (message *Message, err error) {
-	if textMsg == "" {
-		return nil, errors.New("the message is empty")
-	}
-	message, err = db.NewTextMsg(textMsg)
-	if err != nil {
+	if message, err = db.NewTextMsg(textMsg); err != nil {
 		return
 	}
 	return message, db.Insert(message)

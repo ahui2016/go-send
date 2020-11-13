@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
@@ -72,8 +71,7 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	textMsg := strings.TrimSpace(r.FormValue("text-msg"))
-	message, err := db.InsertTextMsg(textMsg)
+	message, err := db.InsertTextMsg(r.FormValue("text-msg"))
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
