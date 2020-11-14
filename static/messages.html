@@ -59,8 +59,7 @@
               placeholder="在此输入简短备忘"></textarea>
           <div class="input-group-append">
             <!-- 这里要加 .rounded-right，因为默认只有最后一个按钮才有圆边。 -->
-            <button id="send-btn" 
-              class="btn btn-outline-primary rounded-right">Send</button>
+            <button id="send-btn" class="btn btn-outline-primary rounded-right">Send</button>
             <button id="send-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
               <span class="spinner-border spinner-border-sm" role="status"></span>
             </button>  
@@ -228,8 +227,10 @@
             </div>
           </div>
           <div class="col-auto">
-            <button id="execute-btn" 
-              class="btn btn-primary">Execute</button>
+            <button id="execute-btn" class="btn btn-primary">Execute</button>
+            <button id="execute-spinner" class="btn btn-primary" style="display: none;" type="button" disabled>
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+            </button>
           </div>
         </div>
         <small id="command-help" class="form-text text-muted"></small>
@@ -270,10 +271,11 @@
     <script>
     // 如果有些函数在这里找不到，那就是在 util.js 里。
 
-let textForCopy = $('#textForCopy');
-let msgInput = $('#msg-input');
-let commandHelp = $('#command-help');
-let commands = $('#commands');
+const textForCopy = $('#textForCopy');
+const msgInput = $('#msg-input');
+const commandHelp = $('#command-help');
+const commands = $('#commands');
+const executeBtn = $('#execute-btn')
 
 initData();
 
@@ -500,7 +502,7 @@ commands.change(event => {
 });
 
 // 执行高级命令
-$('#execute-btn').click(event => {
+executeBtn.click(event => {
   event.preventDefault();
 
   let command = commands.val();
@@ -512,7 +514,7 @@ $('#execute-btn').click(event => {
 
   let form = new FormData();
   form.append('command', command);
-  ajaxPost(form, '/api/execute-command', $('#execute-btn'), function() {
+  ajaxPostWithSpinner(form, '/api/execute-command', 'execute', function() {
     if (this.status == 200) {
       // 如果 this.response 是一个 Message, 则插入列表顶部，否则刷新页面。
       if (this.response && this.response.ID) {
@@ -522,6 +524,7 @@ $('#execute-btn').click(event => {
         doAfterInsert(item, message);
         return;
       }
+      executeBtn.prop('disabled', true);
       window.location.reload();
     } else {
       let errMsg = !this.response ? this.status : this.response.message;
