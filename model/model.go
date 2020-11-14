@@ -13,7 +13,7 @@ import (
 
 const (
 	// FileNameMinLength 规定包括后缀名在内文件名长度不可小于 5.
-	FileNameMinLength = 5
+	FileNameMinLength = 3
 )
 
 // MsgType 是一个枚举类型，用来区分 Message 的类型。
@@ -91,7 +91,7 @@ func (message *Message) IsImage() bool {
 func typeByFilename(filename string) (filetype string) {
 	ext := strings.ToLower(filepath.Ext(filename))
 	filetype = mime.TypeByExtension(ext)
-	ext = ext[1:]
+	ext = strings.TrimPrefix(ext, ".")
 	switch ext {
 	case "zip", "rar", "7z", "gz", "tar", "bz", "bz2", "xz":
 		filetype = "compressed/" + ext

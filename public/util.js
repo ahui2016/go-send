@@ -1,7 +1,7 @@
 const thumbWidth = 128, thumbHeight = 128;
 
 // 文件保质期 (变灰时间), 该值应等于后端的 database.turnGrey
-const TurnGrey = { n: 3, unit: 'days' };
+const TurnGrey = { n: 15, unit: 'days' };
 
 // 向服务器提交表单，在等待过程中 btn 会失效，避免重复提交。
 function ajaxPost(form, url, btn, onload, onloadend) {
@@ -119,7 +119,7 @@ function fileSizeToString(fileSize, fixed) {
 
 // 把标签文本框内的字符串转化为数组。
 function getNewTags() {
-  let trimmed = $('#tags-input').val().replace(/#|,|，/g, ' ').trim();
+  let trimmed = $('#tags-input').val().replace(/[#,，]/g, ' ').trim();
   if (trimmed.length == 0) {
     return [];
   }
@@ -302,7 +302,11 @@ function getThumbByFile(file) {
 }
 
 function typeOfFile(file) {
-  let ext = file.name.split('.').pop();
+  let fileNameParts = file.name.split('.');
+  if (fileNameParts.length <= 1) {
+    return file.type;
+  }
+  let ext = fileNameParts.pop();
   let filetype;
   if (["zip", "rar", "7z", "gz", "tar", "bz", "bz2", "xz"].indexOf(ext) >= 0) {
     filetype = "compressed/" + ext;
@@ -315,7 +319,7 @@ function typeOfFile(file) {
   } else {
     filetype = file.type;
   }
-	return filetype
+  return filetype
 }
 
 function getThumbByFiletype(filetype) {

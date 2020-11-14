@@ -18,10 +18,10 @@ const (
 	countLimit = 100
 
 	// 文件的最长保存时间
-	keepAlive = time.Hour * 24 * 5 // 30 days
+	keepAlive = time.Hour * 24 * 30 // 30 days
 
 	// 文件变灰时间，应小于 keepAlive, 预警该文件即将被自动删除。
-	turnGrey = time.Hour * 24 * 3 // 15 days
+	turnGrey = time.Hour * 24 * 15 // 15 days
 )
 
 // 用来保存数据库的当前状态.

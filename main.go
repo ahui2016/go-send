@@ -199,21 +199,13 @@ func executeCommand(w http.ResponseWriter, r *http.Request) {
 		}
 		goutil.JsonResponse(w, message, 200)
 	case "delete-all-files":
-		if goutil.CheckErr(w, deleteAllFiles(), 500) {
-			return
-		}
+		goutil.CheckErr(w, deleteAllFiles(), 500)
 	case "delete-10-files":
-		if goutil.CheckErr(w, deleteOldFiles(10), 500) {
-			return
-		}
+		goutil.CheckErr(w, deleteOldFiles(10), 500)
 	case "delete-10-items":
-		if goutil.CheckErr(w, deleteOldItems(10), 500) {
-			return
-		}
+		goutil.CheckErr(w, deleteOldItems(10), 500)
 	case "delete-grey-items":
-		if goutil.CheckErr(w, deleteGreyItems(), 500) {
-			return
-		}
+		goutil.CheckErr(w, deleteGreyItems(), 500)
 	default:
 		goutil.JsonMessage(w, "unknown command", 400)
 	}
