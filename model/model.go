@@ -68,6 +68,7 @@ func (message *Message) SetTextMsg(textMsg string) error {
 	}
 	message.TextMsg = textMsg
 	message.FileSize = int64(len(textMsg))
+	return nil
 }
 
 // SetFileNameType 同时设置 FileName 和 FileType.

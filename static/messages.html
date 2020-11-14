@@ -15,8 +15,6 @@
     <script src="/public/jquery-3.5.1.min.js"></script>
     <script src="/public/bootstrap.bundle.min.js"></script>
     <script src="/public/dayjs.min.js"></script>
-    <script src="/public/duration.js"></script>
-    <script>dayjs.extend(window.dayjs_plugin_duration)</script>
     <script src="/public/util.js"></script>
 
     <style>
@@ -141,7 +139,7 @@
                 </svg>
                 <svg class="Icon InfoIcon bi bi-info-circle" width="1em" height="1em"
                      style="display: none;" data-toggle="tooltip"
-                     title="该项目已过期，因此变灰。变灰表示即将被自动删除。点击上升按钮可更新日期并且变白。"
+                     title="该项目已过期，因此变灰。变灰表示即将被自动删除。点击上升按钮可更新日期并且变。"
                      viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                   <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588z"/>
@@ -188,7 +186,7 @@
                     </svg>
                     <svg class="Icon InfoIcon bi bi-info-circle" width="1em" height="1em"
                          style="display: none;" data-toggle="tooltip"
-                         title="该项目已过期，因此变灰。变灰表示即将被自动删除。点击上升按钮可更新日期并且变白。"
+                         title="该项目已过期，因此变灰。变灰表示即将被自动删除。点击上升按钮可更新日期并且变。"
                          viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                       <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                       <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588z"/>
@@ -223,7 +221,9 @@
                 <option value="none" selected>Choose...</option>
                 <option value="zip-all-files">打包全部文件</option>
                 <option value="delete-all-files">删除全部文件</option>
-                <option value="delete-5-files">删除列表底部 5 个文件</option>
+                <option value="delete-10-files">删除列表底部 10 个文件</option>
+                <option value="delete-10-items">删除 10 项</option>
+                <option value="delete-grey-items">删除已变灰的项目</option>
               </select>  
             </div>
           </div>
@@ -319,10 +319,9 @@ function doAfterInsert(item, message) {
   item.find('.MsgID').text(simple_id);
   item.find('.Icon').tooltip();
 
-  // 当剩余时间小于零，该卡片就会变灰。变灰表示已过期，即将被删除。
-  let 相差时间 = dayjs().diff(dayjs(message.UpdatedAt));
-  let 剩余时间 = KeepAlive.subtract(dayjs.duration(相差时间)).seconds();
-  if (剩余时间 <= 0) {
+  // 如果当前时间超过保质期（当前时间在变灰时间之后），该卡片就会变灰。变灰表示已过期，即将被自动删除。
+  let expired = dayjs(message.UpdatedAt).add(TurnGrey.n, TurnGrey.unit);
+  if (dayjs().isAfter(expired)) {
     item.addClass('bg-light');
     item.find('.InfoIcon').show();
     if (message.Type == 'TextMsg') item.find('.CopyIcon').hide();
@@ -486,8 +485,14 @@ commands.change(event => {
     case 'delete-all-files':
       commandHelp.text('删除全部文件，不会删除文字备忘。删除后本页面会自动刷新，被删除的文件不可恢复。');
       break;
-    case 'delete-5-files':
-      commandHelp.text('删除列表底部 5 个文件，忽略文字备忘。如果在列表底部有不想删除的文件，可点击其 “上升” 按钮使其上升到列表顶部，如果一共只有 5 个文件或更少，则全部文件都会被删除。');
+    case 'delete-10-files':
+      commandHelp.text('删除列表底部 10 个文件，忽略文字备忘。如果在列表底部有不想删除的文件，可点击其 “上升” 按钮使其上升至列表顶部，但如果一共只有 10 个文件或更少，则全部文件都会被删除。');
+      break;
+    case 'delete-10-items':
+      commandHelp.text('删除列表底部 10 项，包括文件和文字备忘，被删除的项目不可恢复。');
+      break;
+    case 'delete-grey-items':
+      commandHelp.text('删除已变灰的项目，若有不想删除的项目可点击 “上升” 按钮使其上升至列表顶部，被删除的项目不可恢复。');
       break;
     default:
       commandHelp.text('');

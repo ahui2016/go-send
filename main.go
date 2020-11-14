@@ -59,12 +59,14 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func addFilePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, HTML["send-file"])
+func addFilePage(w http.ResponseWriter, _ *http.Request) {
+	_, err := fmt.Fprint(w, HTML["send-file"])
+	goutil.CheckErr(w, err, 500)
 }
 
-func messagesPage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, HTML["messages"])
+func messagesPage(w http.ResponseWriter, _ *http.Request) {
+	_, err := fmt.Fprint(w, HTML["messages"])
+	goutil.CheckErr(w, err, 500)
 }
 
 func addTextMsg(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +80,7 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	goutil.JsonResponse(w, message, 200)
 }
 
-func getAllHandler(w http.ResponseWriter, r *http.Request) {
+func getAllHandler(w http.ResponseWriter, _ *http.Request) {
 	all, err := db.AllByUpdatedAt()
 	if goutil.CheckErr(w, err, 500) {
 		return
@@ -200,8 +202,16 @@ func executeCommand(w http.ResponseWriter, r *http.Request) {
 		if goutil.CheckErr(w, deleteAllFiles(), 500) {
 			return
 		}
-	case "delete-5-files":
-		if goutil.CheckErr(w, deleteOldFiles(5), 500) {
+	case "delete-10-files":
+		if goutil.CheckErr(w, deleteOldFiles(10), 500) {
+			return
+		}
+	case "delete-10-items":
+		if goutil.CheckErr(w, deleteOldItems(10), 500) {
+			return
+		}
+	case "delete-grey-items":
+		if goutil.CheckErr(w, deleteGreyItems(), 500) {
 			return
 		}
 	default:
@@ -255,10 +265,30 @@ func deleteOldFiles(n int) error {
 	if err != nil {
 		return err
 	}
-	if err := deleteFilesAndThumb(files); err != nil {
+	return deleteItems(files)
+}
+
+func deleteOldItems(n int) error {
+	items, err := db.OldItems(n)
+	if err != nil {
 		return err
 	}
-	return db.DeleteOldFiles(n)
+	return deleteItems(items)
+}
+
+func deleteGreyItems() error {
+	items, err := db.GreyItems()
+	if err != nil {
+		return err
+	}
+	return deleteItems(items)
+}
+
+func deleteItems(items []Message) error {
+	if err := deleteFilesAndThumb(items); err != nil {
+		return err
+	}
+	return db.DeleteMessages(items)
 }
 
 func deleteAllFiles() error {
@@ -311,7 +341,7 @@ func updateDatetime(w http.ResponseWriter, r *http.Request) {
 	goutil.CheckErr(w, db.UpdateDatetime(id), 500)
 }
 
-func getTotalSize(w http.ResponseWriter, r *http.Request) {
+func getTotalSize(w http.ResponseWriter, _ *http.Request) {
 	size, _ := db.GetTotalSize()
 	resp := make(map[string]int64)
 	resp["totalSize"] = size
@@ -319,7 +349,7 @@ func getTotalSize(w http.ResponseWriter, r *http.Request) {
 	goutil.JsonResponse(w, resp, 200)
 }
 
-func getLastText(w http.ResponseWriter, r *http.Request) {
+func getLastText(w http.ResponseWriter, _ *http.Request) {
 	textMsg, err := db.LastTextMsg()
 	if goutil.CheckErr(w, err, 500) {
 		return

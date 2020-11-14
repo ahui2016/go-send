@@ -1,7 +1,7 @@
 const thumbWidth = 128, thumbHeight = 128;
 
-// 文件的最长保存时间
-const KeepAlive = dayjs.duration(30, 'days');
+// 文件保质期 (变灰时间), 该值应等于后端的 database.turnGrey
+const TurnGrey = { n: 3, unit: 'days' };
 
 // 向服务器提交表单，在等待过程中 btn 会失效，避免重复提交。
 function ajaxPost(form, url, btn, onload, onloadend) {

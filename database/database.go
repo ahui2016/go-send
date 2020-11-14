@@ -18,7 +18,10 @@ const (
 	countLimit = 100
 
 	// 文件的最长保存时间
-	keepAlive = time.Hour * 24 * 30 // 30 days
+	keepAlive = time.Hour * 24 * 5 // 30 days
+
+	// 文件变灰时间，应小于 keepAlive, 预警该文件即将被自动删除。
+	turnGrey = time.Hour * 24 * 3 // 15 days
 )
 
 // 用来保存数据库的当前状态.
@@ -173,7 +176,9 @@ func (db *DB) NewFileMsg(filename string) (*Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	message.SetFileNameType(filename)
+	if err := message.SetFileNameType(filename); err != nil {
+		return nil, err
+	}
 	return message, nil
 }
 
@@ -217,8 +222,10 @@ func (db *DB) Insert(message *Message) error {
 func (db *DB) Delete(id string) error {
 	message, err1 := db.getByID(id)
 	err2 := db.DB.DeleteStruct(message)
-	err3 := db.addTotalSize(-message.FileSize)
-	return goutil.WrapErrors(err1, err2, err3)
+	if err := goutil.WrapErrors(err1, err2); err != nil {
+		return err
+	}
+	return db.addTotalSize(-message.FileSize)
 }
 
 func (db *DB) getByID(id string) (*Message, error) {
@@ -248,6 +255,19 @@ func (db *DB) DeleteAllFiles() error {
 	return db.recountTotalSize()
 }
 
+// OldItems 找出最老的 (更新日期最早的) n 条记录，返回 []Message.
+func (db *DB) OldItems(n int) (items []Message, err error) {
+	err = db.DB.AllByIndex("UpdatedAt", &items, storm.Limit(n))
+	return
+}
+
+func (db *DB) GreyItems() (items []Message, err error) {
+	// 如果 item.UpdatedAt 在 turnGreyTime 之前，说明该 item 已过期（已变灰）。
+	turnGreyTime := time.Now().Add(-turnGrey).Format(goutil.ISO8601)
+	err = db.DB.Select(q.Lt("UpdatedAt", turnGreyTime)).Find(&items)
+	return
+}
+
 // OldFiles 找出最老的 (更新日期最早的) n 个文件 (Type = FileMsg)
 // 返回 []Message.
 func (db *DB) OldFiles(n int) (files []Message, err error) {
@@ -256,20 +276,9 @@ func (db *DB) OldFiles(n int) (files []Message, err error) {
 	return
 }
 
-// queryOldFiles 找出最老的 (更新日期最早的) n 个文件 (Type = FileMsg),
-// 返回 storm.Query.
 func (db *DB) queryOldFiles(n int) storm.Query {
 	return db.DB.Select(q.Eq("Type", model.FileMsg)).
 		OrderBy("UpdatedAt").Limit(n)
-}
-
-// DeleteOldFiles .
-func (db *DB) DeleteOldFiles(n int) error {
-	query := db.queryOldFiles(n)
-	if err := query.Delete(new(Message)); err != nil {
-		return err
-	}
-	return db.recountTotalSize()
 }
 
 // DeleteMessages deletes messages by IDs.
