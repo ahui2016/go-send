@@ -23,6 +23,9 @@ func main() {
 	fs := http.FileServer(http.Dir("public"))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
 
+	staticFS := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", staticFS))
+
 	filesFS := http.FileServer(http.Dir(filesDir))
 	filesFS = http.StripPrefix("/files/", filesFS)
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
@@ -236,7 +239,7 @@ func zipAllFiles() (message *Message, err error) {
 	return
 }
 
-// zipperFiles 会自动剔除使用 GosendZip, 避免重复打包。
+// zipperFiles 将文件转换为 zipper.File 形式，会剔除 GosendZip, 避免重复打包。
 func zipperFiles(fileMessages []Message) (files []zipper.File) {
 	for i := range fileMessages {
 		message := fileMessages[i]
