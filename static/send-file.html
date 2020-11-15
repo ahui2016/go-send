@@ -38,6 +38,8 @@
 
   <body>
     <div class="container" style="max-width: 680px; min-width: 400px;">
+
+      <!-- 顶部导航栏 -->
       <nav class="navbar navbar-light bg-light mt-1">
         <span class="navbar-brand mb-0 h1">Send File</span>
         <div class="btn-toolbar" role="toolbar" aria-label="nav bar">
@@ -54,6 +56,7 @@
         </div>  
       </nav>
 
+      <!-- 上传文件表单 -->
       <form id="file-form" style="margin-top: 50px;" autocomplete="off">
 
         <div id="custom-file-input" class="custom-file mb-3">
@@ -93,7 +96,8 @@
             </button>
           </div>
         </template>
-        
+
+        <!-- 上传按钮 与 文件数量 -->
         <div id="hidden-area" class="mb-3" style="display: none;">
           <input type="submit" disabled hidden />
           <div class="d-flex flex-row  align-items-center">
@@ -111,6 +115,8 @@
       </form>
       
       <div id="all-files">
+
+        <!-- 文件模板 -->
         <template id="file-msg-tmpl">
           <div class="card mb-3">
             <div class="row no-gutters">
@@ -139,18 +145,18 @@
         </template>
       </div>
 
+      <!-- 容量 -->
       <div class="text-center" id="total-size" style="margin: 50px 0 50px 0;"></div>
 
     </div>
 
 <script>
     // 如果有些函数在这里找不到，那就是在 util.js 里。
+
 // eruda.init();
-
-let fileInput = $('#file-input');
-
 let files = [];
 
+// 上传文件
 $('#send-btn').click(event => {
   event.preventDefault();
   if (files.length == 0) {
@@ -162,6 +168,7 @@ $('#send-btn').click(event => {
   uploadOneByOne(files.length);
 });
 
+// 文件逐个上传
 function uploadOneByOne(i) {
   if (i <= 0) {
     insertInfoAlert('上传结束，如果如下所示。');
@@ -172,6 +179,7 @@ function uploadOneByOne(i) {
   checkHashUpload(i);
 }
 
+let fileInput = $('#file-input');
 fileInput.change(event => {
 
   $('#hidden-area').show();
@@ -188,6 +196,7 @@ fileInput.change(event => {
     files.push(file)
     updateFilesCount(files.length);
 
+    // 插入卡片。图片或视频有缩略图
     let item = $('#file-msg-tmpl').contents().clone()
     item.insertAfter('#file-msg-tmpl');
     if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
@@ -197,6 +206,7 @@ fileInput.change(event => {
       item.find('.card-img').attr('src', thumbUrl);
     }
 
+    // 填充卡片内容（文件名等）
     let itemID = ItemID.next();
     file.itemID = itemID;
     item.attr('id', itemID);
@@ -204,6 +214,7 @@ fileInput.change(event => {
     item.find('.card-text').text(file.name);
     item.find('.Icon').tooltip();
 
+    // 删除按钮
     let deleteIcon = item.find('.DeleteIcon');
     deleteIcon.click(() => {
       let i = files.findIndex(sameFile);
@@ -215,6 +226,7 @@ fileInput.change(event => {
   }
 });
 
+// 更新已选择的文件数量
 function updateFilesCount(count) {
   let plural = ' file';
   if (count > 1) {
