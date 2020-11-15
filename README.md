@@ -14,11 +14,14 @@
 ## demo 演示
 
 - https://send.ai42.xyz
+- 密码: abc
+- 演示版限制单个文件 512KB 以下，数据库总容量 10MB, 正式版可自由设定这些限制
+
 
 ## 技术特点
 
 - 后端采用 Go, 前端采用 jQuery 和 Bootstrap, 都是非常简单直白的代码
-- 程序很小，不需要配置数据库，占用资源（内存、CPU）极低
+- 程序很小，不需要配置数据库，占用资源（内存、CPU）很少
 - 前后端分离，后端 api 接口一律返回 json 给前端，一共只有 3 个 html 页面
 - 由于是个简单的小项目，因此容易定制，有什么不满意的地方，用户可自行定制修改
 - 没有 webpack, 没有 node_modules, 没有 Vue, React, 不是抗拒新技术，主要是因为没有复杂的功能，因此不过度使用这些专为复杂网页而设的技术。由于前后端分离，如果用户喜欢，也可以自行用 Vue, React 重写前端，后端完全不用修改。
@@ -55,7 +58,7 @@ $ ./go-send &
 ### 设置 Nginx 及 https
 
 - 本软件需要在浏览器里生成 SHA256, 而浏览器要求在 https 模式下才能使用 SHA256 的功能，因此必须配置 https
-- 在 Nginx 配置文件中 (通常是 /etc/nginx/nginx.conf) 添加以下内容：
+- 在 Nginx 配置文件 (通常是 /etc/nginx/nginx.conf) 中添加以下内容：
   ```
   server {
       listen 80;
@@ -65,7 +68,11 @@ $ ./go-send &
       }
   }
   ```
-- 如果已经安装 Certbot, 执行以下命令即可
+- 使 nginx 的修改生效
+  ```sh
+  $ sudo nginx -s reload
+  ```
+- 如果已经安装 Certbot, 执行以下命令即可自动配置 https
   ```sh
   sudo certbot --nginx
   ```
@@ -74,6 +81,6 @@ $ ./go-send &
 
 ## go-send-cli 命令行
 
-- 另外有一个配套的 go-send-cli 工具，属于额外功能，不安装也不影响 go-send
+- 另外有一个配套的 go-send-cli 工具，属于额外功能，不安装也不影响 go-send 的正常使用
 - 安装 go-send-cli 后，无需打开浏览器，在终端即可接收或发布消息（暂时只能收发文本消息，后续可能增加收发文件的功能）
 - https://github.com/ahui2016/go-send-cli

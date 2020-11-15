@@ -23,7 +23,7 @@ function uploadOneByOne(i) {
         return;
     }
     i--;
-    checkHashUpload(i);
+    checkHashUpload(i).catch(e => console.log(e));
 }
 
 let fileInput = $('#file-input');
@@ -46,11 +46,15 @@ fileInput.change(event => {
         // 插入卡片。图片或视频有缩略图
         let item = $('#file-msg-tmpl').contents().clone()
         item.insertAfter('#file-msg-tmpl');
+        let cardImg = item.find('.card-img')[0];
         if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-            tryToDrawThumb(file, item.find('.card-img')[0]);
+            tryToDrawThumb(file, cardImg).catch(() => {
+                cardImg.src = '/public/icons/exclamation-triangle.jpg';
+                cardImg.title = 'This image is broken';
+                $(cardImg).tooltip();
+            });
         } else {
-            let thumbUrl = getThumbByFile(file);
-            item.find('.card-img').attr('src', thumbUrl);
+            cardImg.src = getThumbByFile(file);
         }
 
         // 填充卡片内容（文件名等）

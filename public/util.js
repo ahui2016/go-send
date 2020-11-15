@@ -117,36 +117,6 @@ function fileSizeToString(fileSize, fixed) {
   return `${sizeMB.toFixed(fixed)} MB`;
 }
 
-// 把标签文本框内的字符串转化为数组。
-function getNewTags() {
-  let trimmed = $('#tags-input').val().replace(/[#,，]/g, ' ').trim();
-  if (trimmed.length == 0) {
-    return [];
-  }
-  return trimmed.split(/ +/);
-}
-
-// 把标签数组转化为字符串。
-function addPrefix(arr, prefix) {
-  if (arr == null) {
-    return '';
-  }
-  return arr.map(x => prefix + x).join(' ');
-}
-
-// 检查服务器中有无文件冲突（内容完全一样的文件）。
-function checkHashHex(hashHex) {
-  let form = new FormData();
-  form.append('hashHex', hashHex);
-  ajaxPost(form, '/api/checksum', null, function() {
-    if (this.status == 200) {
-      console.log('OK');
-    } else {
-      console.log(`Error: ${this.status} ${JSON.stringify(this.response)}`);
-    }
-  });
-}
-
 // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
 // In Chrome 60, they added a feature that disables crypto.subtle for non-TLS connections.
 async function sha256Hex(file) {
@@ -155,26 +125,6 @@ async function sha256Hex(file) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   return hashHex;
-}
-
-// 日期：月和日
-function monthAndDay(simpledatetime) {
-  return simpledatetime.split(' ').slice(0, 2).join(' ');
-}
-
-// 日期：年月日和时间
-function simpleDateTime(date) {
-  return date.toString().split(' ').slice(1, 5).join(' ');
-}
-
-// 日期：年月日
-function simpleDate(date) {
-  let year = '' + date.getFullYear(),
-      month = '' + (date.getMonth() + 1),
-      day = '' + date.getDate();
-  if (month.length < 2) month = '0' + month;
-  if (day.length < 2) day = '0' + day;
-  return [year, month, day].join('-');
 }
 
 // 缩略图的url
@@ -195,13 +145,9 @@ function urlWithDate(originURL) {
 
 // 文件未必是图片，因此尝试生成缩略图，如果出错则说明这不是图片。
 async function tryToDrawThumb(file, imgElem) {
-  try {
-    let src = URL.createObjectURL(file);
-    await drawThumb(file.type, src, imgElem);
-    URL.revokeObjectURL(src);
-  } catch (e) {
-    console.log(e);
-  }
+  let src = URL.createObjectURL(file);
+  await drawThumb(file.type, src, imgElem);
+  URL.revokeObjectURL(src);
 }
 
 // 生成缩略图显示在 imgElem 里，如果不是 video 就当作是 image.
@@ -267,22 +213,6 @@ async function dataUrlToFile(dataUrl, filename) {
 function getUrlParam(param) {
   let loc = new URL(document.location);
   return loc.searchParams.get(param);
-}
-
-// 将 arr 里的 box (ID == box_id) 移动到顶部，并保持其他元素的顺序。
-function moveBoxToTop(box_id, tail) {
-  let i = tail.findIndex(box => box.ID == box_id);
-  if (i < 0) return null;
-  if (i == 0) return tail;
-  if (i == 1) {
-    [tail[0], tail[1]] = [tail[1], tail[0]];
-    return tail;
-  }
-
-  // 特殊情况如上。以下是普通情况。
-  let head = tail.splice(i, 1);
-  head.push(...tail);
-  return head;
 }
 
 // ItemID.next() 输出自增 id.

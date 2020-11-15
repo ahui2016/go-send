@@ -208,7 +208,12 @@ func executeCommand(w http.ResponseWriter, r *http.Request) {
 	case "delete-10-items":
 		goutil.CheckErr(w, deleteOldItems(10), 500)
 	case "delete-grey-items":
-		goutil.CheckErr(w, deleteGreyItems(), 500)
+		err := deleteGreyItems()
+		if goutil.ErrorContains(err, "not found") {
+			goutil.JsonMessage(w, "暂时没有文件变灰", 404)
+			return
+		}
+		goutil.CheckErr(w, err, 500)
 	default:
 		goutil.JsonMessage(w, "unknown command", 400)
 	}

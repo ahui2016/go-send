@@ -218,16 +218,16 @@ commands.change(event => {
             commandHelp.text('打包全部文件，不包括文字备忘。打包后，压缩包会显示在列表顶部。下载后请尽快删除以节省空间。');
             break;
         case 'delete-all-files':
-            commandHelp.text('删除全部文件，不会删除文字备忘。删除后本页面会自动刷新，被删除的文件不可恢复。');
+            commandHelp.text('删除全部文件，保留删除文字备忘。删除后本页面会自动刷新，被删除的文件不可恢复。');
             break;
         case 'delete-10-files':
-            commandHelp.text('删除列表底部 10 个文件，忽略文字备忘。如果在列表底部有不想删除的文件，可点击其 “上升” 按钮使其上升至列表顶部，但如果一共只有 10 个文件或更少，则全部文件都会被删除。');
+            commandHelp.text('删除列表底部 10 个文件，保留文字备忘。如果在列表底部有不想删除的文件，可点击其 “上升” 按钮使其上升至列表顶部，但如果一共只有 10 个文件或更少，则全部文件都会被删除。');
             break;
         case 'delete-10-items':
             commandHelp.text('删除列表底部 10 项，包括文件和文字备忘，被删除的项目不可恢复。');
             break;
         case 'delete-grey-items':
-            commandHelp.text('删除已变灰的项目，若有不想删除的项目可点击 “上升” 按钮使其上升至列表顶部，被删除的项目不可恢复。');
+            commandHelp.text('删除已变灰的项目(过期项目)，若有不想删除的项目可点击 “上升” 按钮使其上升至列表顶部，被删除的项目不可恢复。');
             break;
         default:
             commandHelp.text('');
