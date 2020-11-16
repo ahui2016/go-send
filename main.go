@@ -32,6 +32,7 @@ func main() {
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
 	http.HandleFunc("/", homePage)
+	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.HandleFunc("/api/login", bodyLimit(loginHandler))
 
 	http.HandleFunc("/send-file", checkLogin(addFilePage))
@@ -61,6 +62,10 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "public/icons/favicon.ico")
 }
 
 func addFilePage(w http.ResponseWriter, _ *http.Request) {
