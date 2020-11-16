@@ -32,6 +32,7 @@ fileInput.change(event => {
     $('#hidden-area').show();
 
     for (const file of event.target.files) {
+        let itemID = ItemID.next();
 
         const sameFile = a => a.name === file.name;
 
@@ -50,15 +51,15 @@ fileInput.change(event => {
         if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
             tryToDrawThumb(file, cardImg).catch(() => {
                 cardImg.src = '/public/icons/exclamation-triangle.jpg';
-                cardImg.title = 'This image is broken';
-                $(cardImg).tooltip();
+                item.find('.card-subtitle').removeClass('text-muted').addClass('text-danger');
+                item.find('.FileSize').text('This image is broken');
+                file.isBroken = true;
             });
         } else {
             cardImg.src = getThumbByFile(file);
         }
 
         // 填充卡片内容（文件名等）
-        let itemID = ItemID.next();
         file.itemID = itemID;
         item.attr('id', itemID);
         item.find('.FileSize').text(fileSizeToString(file.size));
@@ -90,8 +91,14 @@ function updateFilesCount(count) {
 async function checkHashUpload(i) {
     let file = files[i];
     setCardAlert('info', file.itemID, 'Uploading...');
-    let fileSha256 = await sha256Hex(file);
 
+    if (file.isBroken) {
+        setCardDanger(file.itemID, '文件有问题，拒绝上传');
+        await uploadOneByOne(i);
+        return;
+    }
+
+    let fileSha256 = await sha256Hex(file);
     let form = new FormData();
     form.append('hashHex', fileSha256);
 

@@ -281,3 +281,83 @@ function getThumbByFiletype(filetype) {
       }    
   }
 }
+
+
+
+// go-send-demo 专用
+async function drawThumbResize(file, imgElem) {
+  let src = URL.createObjectURL(file);
+  await drawThumb(file.type, src, imgElem);
+  let [canvas, changed] = await resizeLimit(src, null);
+
+  // 如果图片不需要缩小，就返回 null.
+  if (!changed) {
+    return [null, false];
+  }
+
+  let blob = await canvasToJPEG(canvas);
+  let img_resized = new File([blob], file.name + '.jpeg', {
+    type: 'image/jpeg',
+    lastModified: Date.now()
+  });
+  URL.revokeObjectURL(src);
+  return [img_resized, true];
+}
+
+// Convert `canvas.toBlob` to promise style.
+// 本来想转换为 webp, 但有些浏览器不支持, 而且转换速度很慢。
+function canvasToJPEG(canvas) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      canvas.toBlob = null;
+      reject(Error('timeout'));
+    }, 3000); // timeout: 3 seconds
+
+    canvas.toBlob(blob => {
+      clearTimeout(timeout);
+      resolve(blob);
+    }, 'image/jpeg');
+  });
+}
+
+// ResizeLimit resizes the src if it's long side bigger than limit.
+// Use default limit if limit is set to zero or null.
+function resizeLimit(src, limit) {
+  return new Promise((resolve, reject) => {
+    let img = document.createElement('img');
+    img.src = src;
+    img.onload = function() {
+      let [dw, dh] = limitWidthHeight(img.width, img.height, limit);
+
+      // 如果图片小于限制值，其大小就保持不变。
+      if (dw == img.width && dh == img.height) {
+        resolve([null, false]);
+      }
+
+      let canvas = document.createElement('canvas');
+      canvas.width = thumbWidth;
+      canvas.height = thumbHeight;
+      let ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, dw, dh);
+      resolve([canvas, true]);
+    };
+    img.onerror = reject;
+  });
+}
+
+function limitWidthHeight(w, h, limit) {
+  if (!limit) {
+    limit = 900 // 默认边长上限 900px
+  }
+  // 先限制宽度
+  if (w > limit) {
+    h *= limit / w
+    w = limit
+  }
+  // 缩小后的高度仍有可能超过限制，因此要再判断一次
+  if (h > limit) {
+    w *= limit / h
+    h = limit
+  }
+  return [w, h];
+}

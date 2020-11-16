@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ahui2016/goutil/graphics"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -128,6 +129,9 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	message.Checksum = r.FormValue("checksum")
 	message.FileSize = int64(len(fileContents))
 
+	if checkImage(w, message, fileContents) {
+		return
+	}
 	// 至此，message 的全部内容都已经填充完毕，可以写入数据库。
 	if goutil.CheckErr(w, db.Insert(message), 500) {
 		return
@@ -173,6 +177,18 @@ func writeFile(message *Message, fileContents []byte) error {
 		}
 	}
 	return nil
+}
+
+// checkImage 在 message 是图片是检查该图片能否正常使用，
+// 如果不能正常使用，向 w 写入错误消息并返回 true 表示有错误。
+func checkImage(w http.ResponseWriter, message *Message, img []byte) (hasErr bool) {
+	if message.IsImage() {
+		if _, err := graphics.Thumbnail(img, 0, 0); err != nil {
+			goutil.JsonMessage(w, "该图片有问题，拒绝接收", 500)
+			return true
+		}
+	}
+	return false
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
