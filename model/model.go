@@ -11,6 +11,9 @@ import (
 	"github.com/ahui2016/goutil"
 )
 
+// ISO8601 需要根据服务器的具体时区来设定正确的时区
+const ISO8601 = "2006-01-02T15:04:05.999+00:00"
+
 const (
 	// FileNameMinLength 规定包括后缀名在内文件名长度不可小于 5.
 	FileNameMinLength = 3
@@ -50,7 +53,7 @@ type Message struct {
 
 // NewMessage .
 func NewMessage(id string, msgType MsgType) *Message {
-	now := goutil.TimeNow()
+	now := goutil.TimeNow(ISO8601)
 	return &Message{
 		ID:        id,
 		Type:      msgType,

@@ -44,6 +44,11 @@ function initData() {
 
 // 两种类型的相同操作
 function doAfterInsert(item, message) {
+
+    // 通用按钮
+    let iconButtons = $('#icon_buttons').contents().clone();
+    iconButtons.insertAfter(item.find('.通用按钮插入位置'));
+
     let simple_id = simpleID(message.ID);
     let itemID = ItemID.next();
     item.attr('id', itemID);
@@ -58,10 +63,6 @@ function doAfterInsert(item, message) {
         if (message.Type == 'TextMsg') item.find('.CopyIcon').hide();
         if (message.Type == 'FileMsg') item.find('.DownloadIcon').hide();
     }
-
-    // 通用按钮
-    let iconButtons = $('#icon_buttons').contents().clone();
-    iconButtons.insertAfter(item.find('.通用按钮插入位置'));
 
     // 顶置按钮
     let up_button = item.find('.UpIcon');

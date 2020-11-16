@@ -20,7 +20,7 @@ const (
 	thumbFileExt     = ".small"
 	staticFolder     = "static"
 	passwordMaxTry   = 5
-	defaultPassowrd  = "abc"
+	defaultPassword  = "abc"
 	defaultAddress   = "127.0.0.1:80"
 
 	// 99 days, for session
@@ -76,7 +76,7 @@ func setConfig() {
 
 	// configPath 没有文件或内容为空
 	if err != nil || len(configJSON) == 0 {
-		config.Password = defaultPassowrd
+		config.Password = defaultPassword
 		config.Address = defaultAddress
 		configJSON, err := json.MarshalIndent(config, "", "    ")
 		goutil.CheckErrorFatal(err)

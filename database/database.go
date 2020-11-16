@@ -263,7 +263,7 @@ func (db *DB) OldItems(n int) (items []Message, err error) {
 
 func (db *DB) GreyItems() (items []Message, err error) {
 	// 如果 item.UpdatedAt 在 turnGreyTime 之前，说明该 item 已过期（已变灰）。
-	turnGreyTime := time.Now().Add(-turnGrey).Format(goutil.ISO8601)
+	turnGreyTime := time.Now().Add(-turnGrey).Format(model.ISO8601)
 	err = db.DB.Select(q.Lt("UpdatedAt", turnGreyTime)).Find(&items)
 	return
 }
@@ -296,7 +296,7 @@ func (db *DB) DeleteMessages(messages []Message) error {
 
 // UpdateDatetime ...
 func (db *DB) UpdateDatetime(id string) error {
-	return db.DB.UpdateField(&Message{ID: id}, "UpdatedAt", goutil.TimeNow())
+	return db.DB.UpdateField(&Message{ID: id}, "UpdatedAt", goutil.TimeNow(model.ISO8601))
 }
 
 // LastTextMsg .
