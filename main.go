@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/ahui2016/goutil/graphics"
 	"io/ioutil"
 	"log"
@@ -68,14 +67,12 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "public/icons/favicon.ico")
 }
 
-func addFilePage(w http.ResponseWriter, _ *http.Request) {
-	_, err := fmt.Fprint(w, HTML["send-file"])
-	goutil.CheckErr(w, err, 500)
+func addFilePage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/send-file.html")
 }
 
-func messagesPage(w http.ResponseWriter, _ *http.Request) {
-	_, err := fmt.Fprint(w, HTML["messages"])
-	goutil.CheckErr(w, err, 500)
+func messagesPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/messages.html")
 }
 
 func addTextMsg(w http.ResponseWriter, r *http.Request) {

@@ -2,13 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/ahui2016/go-send/database"
+	"github.com/ahui2016/goutil"
 	"io/ioutil"
 	"log"
 	"path/filepath"
-	"strings"
-
-	"github.com/ahui2016/go-send/database"
-	"github.com/ahui2016/goutil"
 )
 
 const (
@@ -18,7 +16,6 @@ const (
 	configFileName   = "config"
 	gosendFileExt    = ".send"
 	thumbFileExt     = ".small"
-	staticFolder     = "static"
 	passwordMaxTry   = 5
 	defaultPassword  = "abc"
 	defaultAddress   = "127.0.0.1:80"
@@ -40,6 +37,7 @@ const (
 
 var (
 	config Config
+	loginHTML string
 )
 
 var (
@@ -48,7 +46,6 @@ var (
 	dbPath      = filepath.Join(dataDir, databaseFileName)
 	configPath  = filepath.Join(dataDir, configFileName)
 	passwordTry = 0
-	HTML        = make(map[string]string)
 	db          = new(database.DB)
 )
 
@@ -62,7 +59,6 @@ func init() {
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
 
-	fillHTML()
 	setConfig()
 
 	// open the db here, close the db in main().
@@ -99,19 +95,4 @@ func thumbFilePath(id string) string {
 
 func getFileAndThumb(id string) (originFile, thumb string) {
 	return localFilePath(id), thumbFilePath(id)
-}
-
-// fillHTML 把读取 html 文件的内容，塞进 HTML (map[string]string)。
-// 目的是方便以字符串的形式把 html 文件直接喂给 http.ResponseWriter.
-func fillHTML() {
-	filePaths, err := goutil.GetFilesByExt(staticFolder, ".html")
-	goutil.CheckErrorFatal(err)
-
-	for _, path := range filePaths {
-		base := filepath.Base(path)
-		name := strings.TrimSuffix(base, ".html")
-		html, err := ioutil.ReadFile(path)
-		goutil.CheckErrorFatal(err)
-		HTML[name] = string(html)
-	}
 }

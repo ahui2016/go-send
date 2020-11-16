@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,7 +22,7 @@ func maxBodyLimit(fn http.HandlerFunc) http.HandlerFunc {
 // 限制从前端传输过来的数据大小。
 func setBodySize(fn http.HandlerFunc, max int64) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if goutil.CheckErr(w, checkContentLength(w, r, max), 500) {
+		if goutil.CheckErr(w, checkContentLength(r, max), 500) {
 			return
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, max)
@@ -32,7 +31,7 @@ func setBodySize(fn http.HandlerFunc, max int64) http.HandlerFunc {
 }
 
 // Check the Content-Length header immediately when the request comes in.
-func checkContentLength(w http.ResponseWriter, r *http.Request, length int64) error {
+func checkContentLength(r *http.Request, length int64) error {
 	if r.Header.Get("Content-Length") == "" {
 		return nil
 	}
@@ -41,7 +40,7 @@ func checkContentLength(w http.ResponseWriter, r *http.Request, length int64) er
 		return err
 	}
 	if size > length {
-		return errors.New("File Too Large")
+		return errors.New("file too large")
 	}
 	return nil
 }
@@ -49,7 +48,7 @@ func checkContentLength(w http.ResponseWriter, r *http.Request, length int64) er
 func checkLoginForFileServer(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if passwordTry >= passwordMaxTry {
-			db.Close()
+			_ = db.Close()
 			http.NotFound(w, r)
 			return
 		}
@@ -73,7 +72,7 @@ func checkLogin(fn http.HandlerFunc) http.HandlerFunc {
 			if checkPasswordTry(w) {
 				return
 			}
-			fmt.Fprint(w, HTML["login"])
+			http.ServeFile(w, r, "static/login.html")
 			return
 		}
 		fn(w, r)
@@ -91,7 +90,7 @@ func isLoggedOut(r *http.Request) bool {
 func checkPasswordTry(w http.ResponseWriter) bool {
 	if passwordTry >= passwordMaxTry {
 		// log.Fatal()
-		db.Close()
+		_ = db.Close()
 		goutil.JsonMessage(w, "No more try. Input wrong password too many times.", 403)
 		return true
 	}
