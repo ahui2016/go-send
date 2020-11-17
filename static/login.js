@@ -3,9 +3,14 @@
 const loginBtn = $('#login-btn');
 loginBtn.click(event => {
     event.preventDefault();
+    let password = $('#password').val();
+    if (password == '') {
+        insertInfoAlert('请输入密码');
+        return;
+    }
 
     let form = new FormData();
-    form.append('password', $('#password').val());
+    form.append('password', password);
 
     ajaxPostWithSpinner(form, '/api/login', 'login', function() {
         if (this.status == 200) {

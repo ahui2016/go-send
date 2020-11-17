@@ -349,7 +349,7 @@ func deleteFilesAndThumb(files []Message) error {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if isLoggedIn(r) {
-		goutil.JsonMessage(w, "Already logged in.", 400)
+		goutil.JsonMessage(w, "already logged in", 200)
 		return
 	}
 
