@@ -157,7 +157,7 @@ function insertTextMsg(message) {
         console.error('Action:', e.action);
         console.error('Trigger:', e.trigger);
     });
-    
+
     return item;
 }
 

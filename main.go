@@ -5,6 +5,7 @@ import (
 	"github.com/ahui2016/goutil/graphics"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 
@@ -398,19 +399,21 @@ func simpleUploadHandler(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	filename, fileContents, err := getFileNameContents(r)
+	header, contents, err := getHeaderContents(r)
 	if goutil.CheckErr(w, err, 400) {
 		return
 	}
 
-	message, err := db.NewFileMsg(filename)
+	message, err := db.NewFileMsg(header.Filename)
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
 
-	if checkImage(w, message, fileContents) {
+	if checkImage(w, message, contents) {
 		return
 	}
+
+	message.FileSize = header.Size
 
 	// 至此，message 的全部内容都已经填充完毕，可以写入数据库。
 	if goutil.CheckErr(w, db.Insert(message), 500) {
@@ -419,20 +422,21 @@ func simpleUploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 数据库操作成功，保存文件（如果是图片，则顺便生成缩略图）。
 	// 不可在数据库操作结束之前保存文件，因为数据库操作发生错误时不应保存文件。
-	goutil.CheckErr(w, writeFile(message, fileContents), 500)
+	goutil.CheckErr(w, writeFile(message, contents), 500)
 }
 
-func getFileNameContents(r *http.Request) (name string, contents []byte, err error) {
+func getHeaderContents(r *http.Request) (
+	header *multipart.FileHeader, contents []byte, err error) {
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 	defer func() { _ = file.Close() }()
 
 	// 将文件内容全部读入内存
 	contents, err = ioutil.ReadAll(file)
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
-	return header.Filename, contents, nil
+	return header, contents, nil
 }
