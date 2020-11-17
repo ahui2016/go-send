@@ -80,6 +80,16 @@ func checkLogin(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func checkPassword(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.FormValue("password") != config.Password {
+			goutil.JsonMessage(w, "Wrong Password", 400)
+			return
+		}
+		fn(w, r)
+	}
+}
+
 func isLoggedIn(r *http.Request) bool {
 	return db.Sess.Check(r)
 }

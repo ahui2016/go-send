@@ -40,14 +40,16 @@ func main() {
 	http.HandleFunc("/api/upload-file", maxBodyLimit(checkLogin(uploadHandler)))
 
 	http.HandleFunc("/messages", checkLogin(messagesPage))
-	http.HandleFunc("/api/add-text-msg", bodyLimit(checkLogin(addTextMsg)))
-	http.HandleFunc("/api/last-text", bodyLimit(checkLogin(getLastText)))
 	http.HandleFunc("/api/all", bodyLimit(checkLogin(getAllHandler)))
+	http.HandleFunc("/api/add-text-msg", bodyLimit(checkLogin(addTextMsg)))
 	http.HandleFunc("/api/delete", bodyLimit(checkLogin(deleteHandler)))
 
 	http.HandleFunc("/api/update-datetime", bodyLimit(checkLogin(updateDatetime)))
 	http.HandleFunc("/api/execute-command", bodyLimit(checkLogin(executeCommand)))
 	http.HandleFunc("/api/total-size", bodyLimit(checkLogin(getTotalSize)))
+
+	http.HandleFunc("/api/add-text", bodyLimit(checkPassword(addTextMsg)))
+	http.HandleFunc("/api/last-text", bodyLimit(checkPassword(getLastText)))
 
 	log.Print(config.Address)
 	log.Fatal(http.ListenAndServe(config.Address, nil))
