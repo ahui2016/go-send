@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/ahui2016/goutil/graphics"
 	"io/ioutil"
 	"log"
@@ -389,5 +390,5 @@ func getLastText(w http.ResponseWriter, _ *http.Request) {
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
-	goutil.JsonMessage(w, textMsg, 200)
+	_, _ = fmt.Fprint(w, textMsg)
 }
