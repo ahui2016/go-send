@@ -15,7 +15,7 @@ import (
 const (
 
 	// 数据库条目数上限
-	countLimit = 100
+	//countLimit = 100
 
 	// 文件的最长保存时间
 	keepAlive = time.Hour * 24 * 30 // 30 days
@@ -261,10 +261,19 @@ func (db *DB) OldItems(n int) (items []Message, err error) {
 	return
 }
 
+// GreyItems 找出变灰的条目
 func (db *DB) GreyItems() (items []Message, err error) {
-	// 如果 item.UpdatedAt 在 turnGreyTime 之前，说明该 item 已过期（已变灰）。
+	// 如果 UpdatedAt 在 turnGreyTime 之前，说明它已变灰。
 	turnGreyTime := time.Now().Add(-turnGrey).Format(model.ISO8601)
 	err = db.DB.Select(q.Lt("UpdatedAt", turnGreyTime)).Find(&items)
+	return
+}
+
+// ExpiredItems 找出过期的条目
+func (db *DB) ExpiredItems() (items []Message, err error) {
+	// 如果 UpdatedAt 在 expiredTime 之前，说明它已过期。
+	expiredTime := time.Now().Add(-keepAlive).Format(model.ISO8601)
+	err = db.DB.Select(q.Lt("UpdatedAt", expiredTime)).Find(&items)
 	return
 }
 

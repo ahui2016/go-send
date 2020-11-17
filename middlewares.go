@@ -72,7 +72,8 @@ func checkLogin(fn http.HandlerFunc) http.HandlerFunc {
 			if checkPasswordTry(w) {
 				return
 			}
-			http.ServeFile(w, r, "static/login.html")
+			//http.ServeFile(w, r, "static/login.html")
+			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 		fn(w, r)

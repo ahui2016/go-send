@@ -10,7 +10,7 @@ loginBtn.click(event => {
     ajaxPostWithSpinner(form, '/api/login', 'login', function() {
         if (this.status == 200) {
             loginBtn.prop('disabled', true);
-            window.location.reload();
+            window.location = '/home';
         } else {
             let errMsg = !this.response ? this.status : this.response.message;
             insertErrorAlert(errMsg);

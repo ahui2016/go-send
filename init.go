@@ -37,7 +37,6 @@ const (
 
 var (
 	config Config
-	loginHTML string
 )
 
 var (

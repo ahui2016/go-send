@@ -3,3 +3,4 @@
 static/login-shushu.html
 *.xml
 *.iml
+*.http

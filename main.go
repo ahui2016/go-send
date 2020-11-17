@@ -18,7 +18,7 @@ type (
 )
 
 func main() {
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	fs := http.FileServer(http.Dir("public"))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
@@ -32,6 +32,7 @@ func main() {
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/favicon.ico", faviconHandler)
+	http.HandleFunc("/login", loginPage)
 	http.HandleFunc("/api/login", bodyLimit(loginHandler))
 
 	http.HandleFunc("/send-file", checkLogin(addFilePage))
@@ -65,6 +66,10 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "public/icons/favicon.ico")
+}
+
+func loginPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/login.html")
 }
 
 func addFilePage(w http.ResponseWriter, r *http.Request) {
@@ -146,12 +151,15 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 如果前端传来缩略图，就保存下来。如果没有，则忽略不管。
-	thumbFile, err := getThumbnail(r)
-	if err != nil {
-		return
+	if thumbFile, err := getThumbnail(r); err == nil {
+		err = ioutil.WriteFile(thumbFilePath(message.ID), thumbFile, 0600)
+		if goutil.CheckErr(w, err, 500) {
+			return
+		}
 	}
-	err = ioutil.WriteFile(thumbFilePath(message.ID), thumbFile, 0600)
-	goutil.CheckErr(w, err, 500)
+
+	// 自动删除过期条目
+	goutil.CheckErr(w, deleteExpiredItems(), 500)
 }
 
 func getThumbnail(r *http.Request) ([]byte, error) {
@@ -159,7 +167,7 @@ func getThumbnail(r *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = db.Close() }()
 
 	return ioutil.ReadAll(file)
 }
@@ -302,6 +310,17 @@ func deleteGreyItems() error {
 	return deleteItems(items)
 }
 
+func deleteExpiredItems() error {
+	items, err := db.ExpiredItems()
+	if goutil.ErrorContains(err, "not found") {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return deleteItems(items)
+}
+
 func deleteItems(items []Message) error {
 	if err := deleteFilesAndThumb(items); err != nil {
 		return err
@@ -310,14 +329,10 @@ func deleteItems(items []Message) error {
 }
 
 func deleteAllFiles() error {
-	allFiles, err := db.AllFiles()
-	if err != nil {
-		return err
-	}
-	if err := deleteFilesAndThumb(allFiles); err != nil {
-		return err
-	}
-	return db.DeleteAllFiles()
+	err1 := os.RemoveAll(filesDir)
+	err2 := os.Mkdir(filesDir, 0700)
+	err3 := db.DeleteAllFiles()
+	return goutil.WrapErrors(err1, err2, err3)
 }
 
 func deleteFilesAndThumb(files []Message) error {
