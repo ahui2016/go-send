@@ -1,6 +1,5 @@
 // 如果有些函数在这里找不到，那就是在 public/util.js 里。
 
-const textForCopy = $('#textForCopy');
 const msgInput = $('#msg-input');
 const commandHelp = $('#command-help');
 const commands = $('#commands');
@@ -49,9 +48,10 @@ function doAfterInsert(item, message) {
     let iconButtons = $('#icon_buttons').contents().clone();
     iconButtons.insertAfter(item.find('.通用按钮插入位置'));
 
-    let simple_id = simpleID(message.ID);
-    let itemID = ItemID.next();
+    let itemID = 'item-'+message.ID;
     item.attr('id', itemID);
+
+    let simple_id = simpleID(message.ID);
     item.find('.MsgID').text(simple_id);
     item.find('.Icon').tooltip();
 
@@ -129,17 +129,22 @@ function doAfterInsert(item, message) {
 }
 
 function insertTextMsg(message) {
-    let item = $('#text-msg-tmpl').contents().clone();
-
+    const item = $('#text-msg-tmpl').contents().clone();
     // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
     item.insertAfter('#file-msg-tmpl');
-
     item.find('.card-text').text(message.TextMsg);
 
-    let copyIcon = item.find('.CopyIcon');
-    copyIcon.click(() => {
-        textForCopy.show().val(message.TextMsg).select();
-        document.execCommand('copy');
+
+    // 复制按钮
+    const copyIcon = item.find('.CopyIcon');
+    const copybtnID = 'copybtn-'+message.ID;
+    copyIcon.attr('id', copybtnID);
+    const clipboard = new ClipboardJS('#'+copybtnID, {
+        text: function(){
+            return message.TextMsg;
+        }
+    });
+    clipboard.on('success', () => {
         copyIcon
             .tooltip('dispose')
             .attr('title', 'copied!')
@@ -147,15 +152,17 @@ function insertTextMsg(message) {
         window.setTimeout(function() {
             copyIcon.tooltip('dispose').attr('title', 'copy').tooltip();
         }, 2000);
-        textForCopy.hide();
     });
-
+    clipboard.on('error', e => {
+        console.error('Action:', e.action);
+        console.error('Trigger:', e.trigger);
+    });
+    
     return item;
 }
 
 function insertFileMsg(message) {
     let item = $('#file-msg-tmpl').contents().clone();
-
     // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
     item.insertAfter('#file-msg-tmpl');
 

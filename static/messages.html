@@ -15,6 +15,7 @@
     <script src="/public/jquery-3.5.1.min.js"></script>
     <script src="/public/bootstrap.bundle.min.js"></script>
     <script src="/public/dayjs.min.js"></script>
+    <script src="/public/clipboard.min.js"></script>
 
     <style>
 .Icon {
@@ -166,6 +167,7 @@
 
                 <!-- 复制按钮 -->
                 <svg class="Icon CopyIcon bi bi-files" title="copy"
+                     data-clipboard-action="copy"
                      data-toggle="tooltip" width="1em" height="1em" 
                      viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd" d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z"/>
@@ -173,7 +175,7 @@
                 </svg>
               </div>
             </div>
-          </div>  
+          </div>
         </template>
 
         <!-- 文件模板 -->
@@ -254,9 +256,6 @@
       <div class="text-center" style="color: white; margin-top: 150px;">.</div>
 
     </div>
-
-    <!-- 该表单不显示，复制按钮功能需要用到该表单 -->
-    <input form="not-exist" type="text" id="textForCopy" style="display: none;">
 
     <!-- 删除对话框 -->
     <div class="modal" tabindex="-1" role="dialog" id="delete-dialog">
