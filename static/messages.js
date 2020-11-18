@@ -168,7 +168,9 @@ function insertFileMsg(message) {
 
     let file = {name: message.FileName, type: message.FileType};
     if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-        item.find('.card-img').attr('src', thumbURL(message.ID));
+        item.find('.card-img')
+            .on('error', event => event.currentTarget.src = '/public/icons/file-earmark-play.jpg' )
+            .attr('src', thumbURL(message.ID));
         item.find('.LinkToBigImg').attr('href', fileURL(message.ID));
         item.find('.col-md-2').addClass('col-3');
     } else {
