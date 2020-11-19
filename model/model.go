@@ -42,7 +42,7 @@ type Message struct {
 	ID        string // primary key
 	Type      MsgType
 	TextMsg   string
-	FileName  string `storm:"unique"`
+	FileName  string `storm:"index"`
 	FileSize  int64
 	FileType  string // MIME
 	Checksum  string `storm:"unique"` // hex(sha256)

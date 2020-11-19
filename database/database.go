@@ -58,7 +58,8 @@ func (db *DB) Open(maxAge int, cap int64, dbPath string) (err error) {
 	err1 := db.createIndexes()
 	err2 := db.initFirstID()
 	err3 := db.initTotalSize()
-	return goutil.WrapErrors(err1, err2, err3)
+	err4 := db.DB.ReIndex(&Message{}) // 后续要删除
+	return goutil.WrapErrors(err1, err2, err3, err4)
 }
 
 // Close 只是 db.DB.Close(), 不清空 db 里的其它部分。

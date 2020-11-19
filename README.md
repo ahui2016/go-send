@@ -7,7 +7,6 @@
 
 - 随手保存文件或简短备忘
 - 方便个人设备间或熟人之间互传文件
-- 由于是网页版，任何手机或电脑系统均可使用
 - 支持 iPhone Shortcut (快捷指令)
 - 另提供 go-send-cli 命令行工具，服务器、终端环境也可使用
 - 支持快捷键发送系统剪贴板内容 (可发送纯文本或文件)
@@ -121,7 +120,7 @@ $ ./go-send &
 - Windows
   - 安装并正确设置 go-send-cli
   - 安装 AutoHotkey (https://www.autohotkey.com)
-  - 在本程序的源码里有一个文件 gosend.ahk
+  - 下载本程序源码里的文件 gosend.ahk 
   - 双击 gosend.ahk (会出现在系统托盘), 从现在开始，你复制一段文字，按 Win+S 即可发送，非常方便。
   - 如果复制**一个**文件，按 Win+F 即可发送文件，按 Win+S 可发送该文件的位置。
 - iPhone/iPad
