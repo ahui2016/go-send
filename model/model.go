@@ -91,15 +91,41 @@ func (message *Message) IsImage() bool {
 	return strings.HasPrefix(message.FileType, "image")
 }
 
-// ClipText 表示剪贴板文本消息，创建新的类型只是为了方便在数据库里创建一个独立的 bucket.
+// ClipText 表示剪贴板文本消息，创建新的类型只是为了方便在数据库里创建一个独立的 bucket,
+// 结构与 Message 一样。
 type ClipText struct {
-	Message
+	ID        string // primary key
+	Type      MsgType
+	TextMsg   string
+	FileName  string `storm:"index"`
+	FileSize  int64
+	FileType  string // MIME
+	Checksum  string `storm:"unique"` // hex(sha256)
+	CreatedAt string `storm:"index"`  // ISO8601
+	UpdatedAt string `storm:"index"`
+	DeletedAt string `storm:"index"`
 }
 
 // NewClipText .
 func NewClipText(id string, msgType MsgType) *ClipText {
-	msg := NewMessage(id, msgType)
-	return &ClipText{*msg}
+	now := goutil.TimeNow(ISO8601)
+	return &ClipText{
+		ID:        id,
+		Type:      msgType,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+}
+
+// SetTextMsg .
+func (clip *ClipText) SetTextMsg(textMsg string) error {
+	textMsg = strings.TrimSpace(textMsg)
+	if textMsg == "" {
+		return errors.New("the clip is empty")
+	}
+	clip.TextMsg = textMsg
+	clip.FileSize = int64(len(textMsg))
+	return nil
 }
 
 func typeByFilename(filename string) (filetype string) {

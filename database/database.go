@@ -320,6 +320,11 @@ func (db *DB) Delete(id string) error {
 	return db.addTotalSize(-message.FileSize)
 }
 
+// Delete a clip by id
+func (db *DB) DeleteClip(id string) error {
+	return db.DB.Select(q.Eq("ID", id)).Delete(new(ClipText))
+}
+
 func (db *DB) getByID(id string) (*Message, error) {
 	var message Message
 	err := db.DB.One("ID", id, &message)

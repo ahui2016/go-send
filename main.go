@@ -53,6 +53,7 @@ func main() {
 	http.HandleFunc("/clips", checkLogin(clipsPage))
 	http.HandleFunc("/api/all-clips", bodyLimit(checkLogin(getAllClips)))
 	http.HandleFunc("/api/add-clip", bodyLimit(checkPassword(addClipMsg)))
+	http.HandleFunc("/api/delete-clip", bodyLimit(checkLogin(deleteClip)))
 
 	http.HandleFunc("/api/add-text", bodyLimit(checkPassword(addTextMsg)))
 	http.HandleFunc("/api/last-text", bodyLimit(checkPassword(getLastText)))
@@ -243,6 +244,17 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	goutil.CheckErr(w, db.Delete(id), 500)
+}
+
+func deleteClip(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
+	id, ok := goutil.GetID(w, r)
+	if !ok {
+		return
+	}
+	goutil.CheckErr(w, db.DeleteClip(id), 500)
 }
 
 func executeCommand(w http.ResponseWriter, r *http.Request) {

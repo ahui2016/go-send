@@ -10,12 +10,8 @@ initData();
 
 function initData() {
     let url;
-    if (page == 'Messages') {
-        url = '/api/all';
-    }
-    if (page == 'Clips') {
-        url = '/api/all-clips'
-    }
+    if (page == 'Messages') url = '/api/all';
+    if (page == 'Clips') url = '/api/all-clips';
     ajaxGet(url, null, function() {
             if (this.status == 200) {
 
@@ -53,10 +49,8 @@ function initData() {
 function doAfterInsert(item, message) {
 
     // 通用按钮
-    if (page == 'Messages') {
-        let iconButtons = $('#icon_buttons').contents().clone();
-        iconButtons.insertAfter(item.find('.通用按钮插入位置'));
-    }
+    let iconButtons = $('#icon_buttons').contents().clone();
+    iconButtons.insertAfter(item.find('.通用按钮插入位置'));
 
     let itemID = 'item-'+message.ID;
     item.attr('id', itemID);
@@ -76,6 +70,7 @@ function doAfterInsert(item, message) {
 
     // 顶置按钮
     let up_button = item.find('.UpIcon');
+    if (page == 'Clips') up_button.hide();
     up_button.click(() => {
         let form = new FormData();
         form.append('id', message.ID);
@@ -118,9 +113,12 @@ function doAfterInsert(item, message) {
 
         // 确认删除
         $('#yes-button').off().click(() => {
+            let url;
+            if (page == 'Messages') url = '/api/delete';
+            if (page == 'Clips') url = '/api/delete-clip';
             let form = new FormData();
             form.append('id', message.ID);
-            ajaxPost(form, '/api/delete', $('#yes-button'), function() {
+            ajaxPost(form, url, $('#yes-button'), function() {
                     if (this.status == 200) {
                         let infoMsg = 'id: ' + simple_id + ' is deleted';
                         item.hide('slow', function() {
