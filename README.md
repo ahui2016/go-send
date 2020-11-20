@@ -113,19 +113,20 @@ $ ./go-send &
 
 ## 发送系统剪贴板内容
 
-在 Windows 里，我本来打算直接用 AHK 来访问服务器，但发现很麻烦，
-特别是连 urlencode 都要自己实现。因此改成 AHK 与 go-send-cli 配合，
-结果非常理想，gosend.ahk 的内容非常简单，一共只有 10 行代码。
-
 - Windows
-  - 安装并正确设置 go-send-cli
-  - 安装 AutoHotkey (https://www.autohotkey.com)
-  - 下载本程序源码里的文件 gosend.ahk 
-  - 双击 gosend.ahk (会出现在系统托盘), 从现在开始，你复制一段文字，按 Win+S 即可发送，非常方便。
-  - 如果复制**一个**文件，按 Win+F 即可发送文件，按 Win+S 可发送该文件的位置。
+  - 详情请看 https://github.com/ahui2016/gosend.ahk
 - iPhone/iPad
   - 可通过快捷命令实现该功能，具体方法见上文 “iPhone Shortcut (快捷指令)” 章节。
 - Mac
   - 我没有 Mac, 因此没做 Mac 版，但我猜 Mac 里也有类似 AutoHotkey 或快捷指令的工具，
     Mac 用户可自行实现，应该不难。
+  - 如果有人实现了 Mac 版，请反馈给我，在此先谢谢了！
+  - 如果实在没人做，我也可能自己做（呃）。
   
+
+## Go-send Project
+
+由于 go-send 对 Windows, iOS, Android, Linux, macOS, Chrome, Firefox 等不同平台提供（或计划提供）
+便捷的使用方法，因此很多功能不方便直接写在主程序主仓库里，显得稍有点乱，因此建了一个 project 页面汇总信息：
+
+https://github.com/users/ahui2016/projects/1
