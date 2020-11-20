@@ -91,6 +91,17 @@ func (message *Message) IsImage() bool {
 	return strings.HasPrefix(message.FileType, "image")
 }
 
+// ClipText 表示剪贴板文本消息，创建新的类型只是为了方便在数据库里创建一个独立的 bucket.
+type ClipText struct {
+	Message
+}
+
+// NewClipText .
+func NewClipText(id string, msgType MsgType) *ClipText {
+	msg := NewMessage(id, msgType)
+	return &ClipText{*msg}
+}
+
 func typeByFilename(filename string) (filetype string) {
 	ext := strings.ToLower(filepath.Ext(filename))
 	filetype = mime.TypeByExtension(ext)

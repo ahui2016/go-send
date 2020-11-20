@@ -51,6 +51,7 @@ func main() {
 	http.HandleFunc("/api/total-size", bodyLimit(checkLogin(getTotalSize)))
 
 	http.HandleFunc("/api/add-text", bodyLimit(checkPassword(addTextMsg)))
+	http.HandleFunc("/api/add-clip", bodyLimit(checkPassword(addClipMsg)))
 	http.HandleFunc("/api/last-text", bodyLimit(checkPassword(getLastText)))
 	http.HandleFunc("/api/add-photo", maxBodyLimit(checkPassword(simpleUploadHandler)))
 
@@ -90,6 +91,17 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	defer db.Unlock()
 
 	message, err := db.InsertTextMsg(r.FormValue("text-msg"))
+	if goutil.CheckErr(w, err, 500) {
+		return
+	}
+	goutil.JsonResponse(w, message, 200)
+}
+
+func addClipMsg(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
+	message, err := db.InsertClipMsg(r.FormValue("text-msg"))
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}

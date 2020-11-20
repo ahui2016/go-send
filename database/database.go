@@ -15,7 +15,10 @@ import (
 const (
 
 	// 数据库条目数上限
-	//countLimit = 100
+	// countLimit = 100
+
+	// 剪贴板文本消息上限
+	clipTextLimit = 1000
 
 	// 文件的最长保存时间
 	keepAlive = time.Hour * 24 * 30 // 30 days
@@ -28,11 +31,13 @@ const (
 const (
 	metadataBucket = "metadata-bucket"
 	currentIDKey   = "current-id-key"
+	clipIDKey      = "clip-id-key"
 	totalSizeKey   = "total-size-key"
 )
 
 type (
 	Message    = model.Message
+	ClipText   = model.ClipText
 	IncreaseID = model.IncreaseID
 )
 
@@ -57,9 +62,10 @@ func (db *DB) Open(maxAge int, cap int64, dbPath string) (err error) {
 	db.Sess = session.NewManager(maxAge)
 	err1 := db.createIndexes()
 	err2 := db.initFirstID()
-	err3 := db.initTotalSize()
-	err4 := db.DB.ReIndex(&Message{}) // 后续要删除
-	return goutil.WrapErrors(err1, err2, err3, err4)
+	err3 := db.initFirstClipID()
+	err4 := db.initTotalSize()
+	err5 := db.DB.ReIndex(&Message{}) // 后续要删除
+	return goutil.WrapErrors(err1, err2, err3, err4, err5)
 }
 
 // Close 只是 db.DB.Close(), 不清空 db 里的其它部分。
@@ -69,7 +75,9 @@ func (db *DB) Close() error {
 
 // 创建 bucket 和索引
 func (db *DB) createIndexes() error {
-	return db.DB.Init(&Message{})
+	err1 := db.DB.Init(&Message{})
+	err2 := db.DB.Init(&ClipText{})
+	return goutil.WrapErrors(err1, err2)
 }
 
 func (db *DB) initFirstID() (err error) {
@@ -80,6 +88,18 @@ func (db *DB) initFirstID() (err error) {
 	if err == storm.ErrNotFound {
 		id := model.FirstID()
 		return db.DB.Set(metadataBucket, currentIDKey, id)
+	}
+	return
+}
+
+func (db *DB) initFirstClipID() (err error) {
+	_, err = db.getClipID()
+	if err != nil && err != storm.ErrNotFound {
+		return
+	}
+	if err == storm.ErrNotFound {
+		id := model.FirstID()
+		return db.DB.Set(metadataBucket, clipIDKey, id)
 	}
 	return
 }
@@ -97,6 +117,11 @@ func (db *DB) initTotalSize() (err error) {
 
 func (db *DB) getCurrentID() (id IncreaseID, err error) {
 	err = db.DB.Get(metadataBucket, currentIDKey, &id)
+	return
+}
+
+func (db *DB) getClipID() (id IncreaseID, err error) {
+	err = db.DB.Get(metadataBucket, clipIDKey, &id)
 	return
 }
 
@@ -192,6 +217,17 @@ func (db *DB) newMessage(msgType model.MsgType) (*Message, error) {
 	return message, nil
 }
 
+func (db *DB) newClip(textMsg string) (clip *ClipText, err error) {
+	id, err := db.nextClipID()
+	if err != nil {
+		return nil, err
+	}
+	clip = model.NewClipText(id.String(), model.TextMsg)
+	err = clip.SetTextMsg(textMsg)
+	return clip, nil
+
+}
+
 func (db *DB) getNextID() (nextID IncreaseID, err error) {
 	currentID, err := db.getCurrentID()
 	if err != nil {
@@ -199,6 +235,18 @@ func (db *DB) getNextID() (nextID IncreaseID, err error) {
 	}
 	nextID = currentID.Increase()
 	if err := db.DB.Set(metadataBucket, currentIDKey, &nextID); err != nil {
+		return nextID, err
+	}
+	return
+}
+
+func (db *DB) nextClipID() (nextID IncreaseID, err error) {
+	currentID, err := db.getClipID()
+	if err != nil {
+		return nextID, err
+	}
+	nextID = currentID.Increase()
+	if err := db.DB.Set(metadataBucket, clipIDKey, &nextID); err != nil {
 		return nextID, err
 	}
 	return
@@ -217,6 +265,18 @@ func (db *DB) Insert(message *Message) error {
 		return err
 	}
 	return db.addTotalSize(message.FileSize)
+}
+
+// InsertClip .
+func (db *DB) InsertClip(clip *ClipText) error {
+	_, err := db.getByID(clip.ID)
+	if err == nil {
+		return errors.New("id: " + clip.ID + " already exists")
+	}
+	if err := db.DB.Save(clip); err != nil {
+		return err
+	}
+	return db.addTotalSize(clip.FileSize)
 }
 
 // Delete by id
@@ -326,4 +386,12 @@ func (db *DB) InsertTextMsg(textMsg string) (message *Message, err error) {
 		return
 	}
 	return message, db.Insert(message)
+}
+
+// InsertClipMsg 插入文件类型为 model.GosendClip 的特殊消息。
+func (db *DB) InsertClipMsg(textMsg string) (clip *ClipText, err error) {
+	if clip, err = db.newClip(textMsg); err != nil {
+		return
+	}
+	return clip, db.Insert(clip)
 }
