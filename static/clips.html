@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/public/bootstrap.min.css">
 
-    <title>Messages .. go-send</title>
+    <title>Clips .. go-send</title>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -40,22 +40,23 @@
 
       <!-- 顶部导航栏 -->
       <nav class="navbar navbar-light bg-light mt-1">
-        <span class="navbar-brand mb-0 h1">Messages</span>
+        <span class="navbar-brand mb-0 h1">Clips</span>
         <div class="btn-toolbar" role="toolbar" aria-label="nav bar">
           <div class="btn-group" role="group">
-              <a role="button" class="btn btn-outline-dark NavbarBtn" 
-                  href="/send-file" data-toggle="tooltip" title="send file">
-                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-plus-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                  <path fill-rule="evenodd" d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                </svg>
-              </a>
+            <a role="button" class="btn btn-outline-dark NavbarBtn"
+               href="/home" data-toggle="tooltip" title="index">
+              <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-list-task" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5H2zM3 3H2v1h1V3z"/>
+                <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9z"/>
+                <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V7zM2 7h1v1H2V7zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H2zm1 .5H2v1h1v-1z"/>
+              </svg>
+            </a>
           </div>
         </div>
       </nav>
 
       <!-- 简短备忘表单 -->
-      <form id="msg-form" style="margin: 50px 0 50px 0;" autocomplete="off">
+      <form id="msg-form" style="margin: 50px 0 50px 0; display: none;" autocomplete="off">
         <div class="input-group">
           <textarea id="msg-input" rows="3" class="form-control"
               placeholder="在此输入简短备忘"></textarea>
@@ -230,7 +231,7 @@
                 <option value="delete-10-files">删除列表底部 10 个文件</option>
                 <option value="delete-10-items">删除 10 项</option>
                 <option value="delete-grey-items">删除已变灰的项目</option>
-              </select>  
+              </select>
             </div>
           </div>
           <div class="col-auto">

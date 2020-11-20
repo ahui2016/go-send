@@ -4,14 +4,22 @@ const msgInput = $('#msg-input');
 const commandHelp = $('#command-help');
 const commands = $('#commands');
 const executeBtn = $('#execute-btn')
+const page = $('.navbar-brand').text();
 
 initData();
 
 function initData() {
-    ajaxGet('/api/all', null, function() {
+    let url;
+    if (page == 'Messages') {
+        url = '/api/all';
+    }
+    if (page == 'Clips') {
+        url = '/api/all-clips'
+    }
+    ajaxGet(url, null, function() {
             if (this.status == 200) {
 
-                // 条目数太少时不显示高级功能
+                // 条目数太少时不显示高级功能，Clips 页面也不显示高级功能
                 if (this.response.length >= 5) {
                     $('#commands-form').show();
                 }
@@ -45,8 +53,10 @@ function initData() {
 function doAfterInsert(item, message) {
 
     // 通用按钮
-    let iconButtons = $('#icon_buttons').contents().clone();
-    iconButtons.insertAfter(item.find('.通用按钮插入位置'));
+    if (page == 'Messages') {
+        let iconButtons = $('#icon_buttons').contents().clone();
+        iconButtons.insertAfter(item.find('.通用按钮插入位置'));
+    }
 
     let itemID = 'item-'+message.ID;
     item.attr('id', itemID);

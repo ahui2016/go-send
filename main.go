@@ -50,8 +50,11 @@ func main() {
 	http.HandleFunc("/api/execute-command", bodyLimit(checkLogin(executeCommand)))
 	http.HandleFunc("/api/total-size", bodyLimit(checkLogin(getTotalSize)))
 
-	http.HandleFunc("/api/add-text", bodyLimit(checkPassword(addTextMsg)))
+	http.HandleFunc("/clips", checkLogin(clipsPage))
+	http.HandleFunc("/api/all-clips", bodyLimit(checkLogin(getAllClips)))
 	http.HandleFunc("/api/add-clip", bodyLimit(checkPassword(addClipMsg)))
+
+	http.HandleFunc("/api/add-text", bodyLimit(checkPassword(addTextMsg)))
 	http.HandleFunc("/api/last-text", bodyLimit(checkPassword(getLastText)))
 	http.HandleFunc("/api/add-photo", maxBodyLimit(checkPassword(simpleUploadHandler)))
 
@@ -86,6 +89,10 @@ func messagesPage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/messages.html")
 }
 
+func clipsPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/clips.html")
+}
+
 func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
@@ -101,15 +108,20 @@ func addClipMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	message, err := db.InsertClipMsg(r.FormValue("text-msg"))
-	if goutil.CheckErr(w, err, 500) {
-		return
-	}
-	goutil.JsonResponse(w, message, 200)
+	err := db.InsertClip(r.FormValue("text-msg"))
+	goutil.CheckErr(w, err, 500)
 }
 
 func getAllHandler(w http.ResponseWriter, _ *http.Request) {
 	all, err := db.AllByUpdatedAt()
+	if goutil.CheckErr(w, err, 500) {
+		return
+	}
+	goutil.JsonResponse(w, all, 200)
+}
+
+func getAllClips(w http.ResponseWriter, _ *http.Request) {
+	all, err := db.AllClips()
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}

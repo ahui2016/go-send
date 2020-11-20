@@ -268,15 +268,46 @@ func (db *DB) Insert(message *Message) error {
 }
 
 // InsertClip .
-func (db *DB) InsertClip(clip *ClipText) error {
-	_, err := db.getByID(clip.ID)
+func (db *DB) InsertClip(textMsg string) error {
+
+	// 检查内容冲突，如果内容已存在，则只更新日期。
+	var c ClipText
+	err := db.DB.One("TextMsg", textMsg, &c)
 	if err == nil {
-		return errors.New("id: " + clip.ID + " already exists")
+		return db.DB.UpdateField(&c, "UpdatedAt", goutil.TimeNow(model.ISO8601))
 	}
+
+	// 如果内容不存在，则新建 ClipText
+	clip, err := db.newClip(textMsg)
+	if err != nil {
+		return err
+	}
+
+	// 检查 ID 冲突
+	if err := db.DB.One("ID", clip.ID, &c); err == nil {
+		return errors.New("clip id: " + clip.ID + " already exists")
+	}
+
+	// ID 无冲突，可以保存新条目。
 	if err := db.DB.Save(clip); err != nil {
 		return err
 	}
-	return db.addTotalSize(clip.FileSize)
+
+	// 检查数量，如果超过 clipTextLimit 则删除最老的数据。
+	return db.checkClipLimit()
+}
+
+func (db *DB) checkClipLimit() error {
+	n, err := db.DB.Count(&ClipText{})
+	if err != nil {
+		return err
+	}
+	if n < clipTextLimit {
+		return nil
+	}
+	clips, err1 := db.OldClips(n - clipTextLimit)
+	err2 := db.deleteClips(clips)
+	return goutil.WrapErrors(err1, err2)
 }
 
 // Delete by id
@@ -301,6 +332,12 @@ func (db *DB) AllByUpdatedAt() (all []Message, err error) {
 	return
 }
 
+// AllClips .
+func (db *DB) AllClips() (all []ClipText, err error) {
+	err = db.DB.AllByIndex("UpdatedAt", &all)
+	return
+}
+
 // AllFiles finds all files(Type = FileMsg).
 func (db *DB) AllFiles() (files []Message, err error) {
 	err = db.DB.Find("Type", model.FileMsg, &files)
@@ -318,6 +355,12 @@ func (db *DB) DeleteAllFiles() error {
 
 // OldItems 找出最老的 (更新日期最早的) n 条记录，返回 []Message.
 func (db *DB) OldItems(n int) (items []Message, err error) {
+	err = db.DB.AllByIndex("UpdatedAt", &items, storm.Limit(n))
+	return
+}
+
+// OldClips 找出最老的 (更新日期最早的) n 条 clip，返回 []ClipText.
+func (db *DB) OldClips(n int) (items []ClipText, err error) {
 	err = db.DB.AllByIndex("UpdatedAt", &items, storm.Limit(n))
 	return
 }
@@ -353,15 +396,25 @@ func (db *DB) queryOldFiles(n int) storm.Query {
 
 // DeleteMessages deletes messages by IDs.
 func (db *DB) DeleteMessages(messages []Message) error {
-	var IDs []string
-	for i := range messages {
-		IDs = append(IDs, messages[i].ID)
-	}
+	IDs := itemsToIDs(messages)
 	err := db.DB.Select(q.In("ID", IDs)).Delete(new(Message))
 	if err != nil {
 		return err
 	}
 	return db.recountTotalSize()
+}
+
+func (db *DB) deleteClips(clips []ClipText) error {
+	IDs := itemsToIDs(clips)
+	return db.DB.Select(q.In("ID", IDs)).Delete(new(ClipText))
+}
+
+func itemsToIDs(items interface{}) (IDs []string) {
+	arr := items.([]Message)
+	for i := range arr {
+		IDs = append(IDs, arr[i].ID)
+	}
+	return
 }
 
 // UpdateDatetime ...
@@ -386,12 +439,4 @@ func (db *DB) InsertTextMsg(textMsg string) (message *Message, err error) {
 		return
 	}
 	return message, db.Insert(message)
-}
-
-// InsertClipMsg 插入文件类型为 model.GosendClip 的特殊消息。
-func (db *DB) InsertClipMsg(textMsg string) (clip *ClipText, err error) {
-	if clip, err = db.newClip(textMsg); err != nil {
-		return
-	}
-	return clip, db.Insert(clip)
 }
