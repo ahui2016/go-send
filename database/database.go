@@ -357,6 +357,13 @@ func (db *DB) DeleteAllFiles() error {
 	return db.recountTotalSize()
 }
 
+func (db *DB) DeleteAllClips() error {
+	clip := ClipText{}
+	err1 := db.DB.Drop(&clip)
+	err2 := db.DB.Init(&clip)
+	return goutil.WrapErrors(err1, err2)
+}
+
 // OldItems 找出最老的 (更新日期最早的) n 条记录，返回 []Message.
 func (db *DB) OldItems(n int) (items []Message, err error) {
 	err = db.DB.AllByIndex("UpdatedAt", &items, storm.Limit(n))
@@ -423,7 +430,14 @@ func itemsToIDs(items interface{}) (IDs []string) {
 
 // UpdateDatetime ...
 func (db *DB) UpdateDatetime(id string) error {
-	return db.DB.UpdateField(&Message{ID: id}, "UpdatedAt", goutil.TimeNow(model.ISO8601))
+	return db.DB.UpdateField(
+		&Message{ID: id}, "UpdatedAt", goutil.TimeNow(model.ISO8601))
+}
+
+// UpdateClipDatetime ...
+func (db *DB) UpdateClipDatetime(id string) error {
+	return db.DB.UpdateField(
+		&ClipText{ID: id}, "UpdatedAt", goutil.TimeNow(model.ISO8601))
 }
 
 // LastTextMsg .

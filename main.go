@@ -54,6 +54,8 @@ func main() {
 	http.HandleFunc("/api/all-clips", bodyLimit(checkLogin(getAllClips)))
 	http.HandleFunc("/api/add-clip", bodyLimit(checkPassword(addClipMsg)))
 	http.HandleFunc("/api/delete-clip", bodyLimit(checkLogin(deleteClip)))
+	http.HandleFunc("/api/delete-all-clips", bodyLimit(checkLogin(deleteAllClips)))
+	http.HandleFunc("/api/update-clip-datetime", bodyLimit(checkLogin(updateClipDatetime)))
 
 	http.HandleFunc("/api/add-text", bodyLimit(checkPassword(addTextMsg)))
 	http.HandleFunc("/api/last-text", bodyLimit(checkPassword(getLastText)))
@@ -257,6 +259,12 @@ func deleteClip(w http.ResponseWriter, r *http.Request) {
 	goutil.CheckErr(w, db.DeleteClip(id), 500)
 }
 
+func deleteAllClips(w http.ResponseWriter, _ *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+	goutil.CheckErr(w, db.DeleteAllClips(), 500)
+}
+
 func executeCommand(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
@@ -413,6 +421,17 @@ func updateDatetime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	goutil.CheckErr(w, db.UpdateDatetime(id), 500)
+}
+
+func updateClipDatetime(w http.ResponseWriter, r *http.Request) {
+	db.Lock()
+	defer db.Unlock()
+
+	id, ok := goutil.GetID(w, r)
+	if !ok {
+		return
+	}
+	goutil.CheckErr(w, db.UpdateClipDatetime(id), 500)
 }
 
 func getTotalSize(w http.ResponseWriter, _ *http.Request) {
