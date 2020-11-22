@@ -2,6 +2,7 @@ package database // import "github.com/ahui2016/go-send/database"
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -13,10 +14,6 @@ import (
 )
 
 const (
-
-	// 数据库条目数上限
-	// countLimit = 100
-
 	// 文件的最长保存时间
 	keepAlive = time.Hour * 24 * 30 // 30 days
 
@@ -421,9 +418,17 @@ func (db *DB) deleteClips(clips []ClipText) error {
 }
 
 func itemsToIDs(items interface{}) (IDs []string) {
-	arr := items.([]Message)
-	for i := range arr {
-		IDs = append(IDs, arr[i].ID)
+	switch arr := items.(type) {
+	case []Message:
+		for i := range arr {
+			IDs = append(IDs, arr[i].ID)
+		}
+	case []ClipText:
+		for i := range arr {
+			IDs = append(IDs, arr[i].ID)
+		}
+	default:
+		panic(fmt.Errorf("wrong type: %T\n", arr))
 	}
 	return
 }
