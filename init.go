@@ -20,6 +20,9 @@ const (
 	defaultPassword  = "abc"
 	defaultAddress   = "127.0.0.1:80"
 
+	// 剪贴板文本消息上限
+	defaultClipsLimit = 100
+
 	// 99 days, for session
 	maxAge = 60 * 60 * 24 * 99
 
@@ -50,8 +53,9 @@ var (
 
 // Config .
 type Config struct {
-	Password string
-	Address  string
+	Password   string
+	Address    string
+	ClipsLimit int
 }
 
 func init() {
@@ -71,8 +75,11 @@ func setConfig() {
 
 	// configPath 没有文件或内容为空
 	if err != nil || len(configJSON) == 0 {
-		config.Password = defaultPassword
-		config.Address = defaultAddress
+		config = Config{
+			defaultPassword,
+			defaultAddress,
+			defaultClipsLimit,
+		}
 		configJSON, err := json.MarshalIndent(config, "", "    ")
 		goutil.CheckErrorFatal(err)
 		goutil.CheckErrorFatal(

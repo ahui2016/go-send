@@ -4,7 +4,7 @@ const msgInput = $('#msg-input');
 const commandHelp = $('#command-help');
 const commands = $('#commands');
 const executeBtn = $('#execute-btn')
-const page = $('.navbar-brand').text();
+const page = $('#page-name').text();
 
 initData();
 
@@ -12,6 +12,14 @@ function initData() {
     let url;
     if (page == 'Messages') url = '/api/all';
     if (page == 'Clips') url = '/api/all-clips';
+
+    // 初始化 Clips 页面的说明信息。
+    if (page == 'Clips') {
+        $('#about-clips-icon').tooltip().click(() => {
+            $('#about-clips-alert').toggle();
+        });
+    }
+
     ajaxGet(url, null, function() {
             if (this.status == 200) {
 
@@ -61,7 +69,7 @@ function doAfterInsert(item, message) {
 
     // 如果当前时间超过保质期（当前时间在变灰时间之后），该卡片就会变灰。变灰表示已过期，即将被自动删除。
     let expired = dayjs(message.UpdatedAt).add(TurnGrey.n, TurnGrey.unit);
-    if (dayjs().isAfter(expired)) {
+    if (page == 'Messages' && dayjs().isAfter(expired)) {
         item.addClass('bg-light');
         item.find('.InfoIcon').show();
         if (message.Type == 'TextMsg') item.find('.CopyIcon').hide();
@@ -70,7 +78,6 @@ function doAfterInsert(item, message) {
 
     // 顶置按钮
     let up_button = item.find('.UpIcon');
-    if (page == 'Clips') up_button.hide();
     up_button.click(() => {
         let form = new FormData();
         form.append('id', message.ID);
@@ -145,9 +152,9 @@ function insertTextMsg(message) {
 
     // 复制按钮
     const copyIcon = item.find('.CopyIcon');
-    const copybtnID = 'copybtn-'+message.ID;
-    copyIcon.attr('id', copybtnID);
-    const clipboard = new ClipboardJS('#'+copybtnID, {
+    const copyBtnID = 'copyBtn-'+message.ID;
+    copyIcon.attr('id', copyBtnID);
+    const clipboard = new ClipboardJS('#'+copyBtnID, {
         text: function(){
             return message.TextMsg;
         }

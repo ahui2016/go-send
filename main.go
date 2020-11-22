@@ -109,7 +109,7 @@ func addClipMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	err := db.InsertClip(r.FormValue("text-msg"))
+	err := db.InsertClip(r.FormValue("text-msg"), config.ClipsLimit)
 	goutil.CheckErr(w, err, 500)
 }
 

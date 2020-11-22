@@ -17,9 +17,6 @@ const (
 	// 数据库条目数上限
 	// countLimit = 100
 
-	// 剪贴板文本消息上限
-	clipTextLimit = 1000
-
 	// 文件的最长保存时间
 	keepAlive = time.Hour * 24 * 30 // 30 days
 
@@ -267,8 +264,9 @@ func (db *DB) Insert(message *Message) error {
 	return db.addTotalSize(message.FileSize)
 }
 
-// InsertClip .
-func (db *DB) InsertClip(textMsg string) error {
+// InsertClip inserts textMsg as a clip, and delete the oldest clip if
+// the numbers of clips is over limit.
+func (db *DB) InsertClip(textMsg string, limit int) error {
 
 	// 检查内容冲突，如果内容已存在，则只更新日期。
 	var c ClipText
@@ -294,18 +292,19 @@ func (db *DB) InsertClip(textMsg string) error {
 	}
 
 	// 检查数量，如果超过 clipTextLimit 则删除最老的数据。
-	return db.checkClipLimit()
+	return db.checkClipLimit(limit)
 }
 
-func (db *DB) checkClipLimit() error {
+// 检查数量，如果超过 limit 则删除最老的数据。
+func (db *DB) checkClipLimit(limit int) error {
 	n, err := db.DB.Count(&ClipText{})
 	if err != nil {
 		return err
 	}
-	if n < clipTextLimit {
+	if n < limit {
 		return nil
 	}
-	clips, err1 := db.OldClips(n - clipTextLimit)
+	clips, err1 := db.OldClips(n - limit)
 	err2 := db.deleteClips(clips)
 	return goutil.WrapErrors(err1, err2)
 }

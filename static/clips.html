@@ -40,7 +40,12 @@
 
       <!-- 顶部导航栏 -->
       <nav class="navbar navbar-light bg-light mt-1 mb-3">
-        <span class="navbar-brand mb-0 h1">Clips</span>
+        <div class="navbar-brand mb-0 h1">
+          <span id="page-name">Clips</span>
+          <img id="about-clips-icon" src="/public/icons/info-circle.svg" alt="info"
+               title="显示或隐藏说明" data-toggle="tooltip" data-placement="right"
+               style="cursor: pointer;">
+        </div>
         <div class="btn-toolbar" role="toolbar" aria-label="nav bar">
           <div class="btn-group" role="group">
             <a role="button" class="btn btn-outline-dark NavbarBtn"
@@ -75,6 +80,13 @@
         <div class="spinner-border" role="status">
             <span class="sr-only">Loading...</span>
         </div>
+      </div>
+
+      <!-- 关于 clips 的说明 -->
+      <div id="about-clips-alert" class="alert alert-info" role="alert" style="display: none;">
+        <span class="AlertMessage">本功能简单来说就是一个 “云剪贴板”，使用方法详见</span>
+        <a href="https://github.com/ahui2016/gosend.ahk" target="_blank">
+          https://github.com/ahui2016/gosend.ahk</a>
       </div>
 
       <!-- 默认的提示显示位置 -->
