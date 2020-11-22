@@ -40,7 +40,12 @@
 
       <!-- 顶部导航栏 -->
       <nav class="navbar navbar-light bg-light mt-1 mb-3">
-        <span class="navbar-brand mb-0 h1" id="page-name">Messages</span>
+        <div class="navbar-brand mb-0 h1">
+          <span id="page-name">Messages</span>
+          <img id="about-page-icon" src="/public/icons/info-circle.svg" alt="info"
+               title="显示或隐藏说明" data-toggle="tooltip" data-placement="right"
+               style="cursor: pointer;">
+        </div>
         <div class="btn-toolbar" role="toolbar" aria-label="nav bar">
           <div class="btn-group" role="group">
             <a role="button" class="btn btn-outline-dark NavbarBtn"
@@ -61,6 +66,13 @@
           </div>
         </div>
       </nav>
+
+      <!-- 关于本页面的说明 -->
+      <div id="about-page-alert" class="alert alert-info" role="alert" style="display: none;">
+        <span class="AlertMessage">本站是一个开源项目，主要功能是快捷备忘、临时保存文件，详细说明请看</span>
+        <a href="https://github.com/users/ahui2016/projects/1?fullscreen=true" target="_blank">
+          https://github.com/users/ahui2016/projects/1</a>
+      </div>
 
       <!-- 简短备忘表单 -->
       <form id="msg-form" style="margin: 50px 0 50px 0;" autocomplete="off">

@@ -13,12 +13,10 @@ function initData() {
   if (page == 'Messages') url = '/api/all';
   if (page == 'Clips') url = '/api/all-clips';
 
-  // 初始化 Clips 页面的说明信息。
-  if (page == 'Clips') {
-    $('#about-clips-icon').tooltip().click(() => {
-      $('#about-clips-alert').toggle();
-    });
-  }
+  // 初始化本页面的说明。
+  $('#about-page-icon').tooltip().click(() => {
+    $('#about-page-alert').toggle();
+  });
 
   ajaxGet(url, null, function () {
         if (this.status == 200) {
