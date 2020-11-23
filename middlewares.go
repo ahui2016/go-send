@@ -89,6 +89,25 @@ func checkPassword(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+/*
+func handlerToFunc(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		h.ServeHTTP(w, r)
+	}
+}
+*/
+
+func authWebDav(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.FormValue("password") != config.Password {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Access to WebDav"`)
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		h.ServeHTTP(w, r)
+	}
+}
+
 func isLoggedIn(r *http.Request) bool {
 	return db.Sess.Check(r)
 }

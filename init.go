@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"github.com/ahui2016/go-send/database"
 	"github.com/ahui2016/goutil"
+	"golang.org/x/net/webdav"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"path/filepath"
 )
 
@@ -19,6 +21,7 @@ const (
 	passwordMaxTry   = 5
 	defaultPassword  = "abc"
 	defaultAddress   = "127.0.0.1:80"
+	webdavFolderName = "webdav"
 
 	// 剪贴板文本消息上限
 	defaultClipsLimit = 100
@@ -47,8 +50,10 @@ var (
 	filesDir    = filepath.Join(dataDir, filesFolderName)
 	dbPath      = filepath.Join(dataDir, databaseFileName)
 	configPath  = filepath.Join(dataDir, configFileName)
+	webdavDir   = filepath.Join(dataDir, webdavFolderName)
 	passwordTry = 0
 	db          = new(database.DB)
+	dav         = newDav(webdavDir)
 )
 
 // Config .
@@ -61,6 +66,7 @@ type Config struct {
 func init() {
 	goutil.MustMkdir(dataDir)
 	goutil.MustMkdir(filesDir)
+	goutil.MustMkdir(webdavDir)
 
 	setConfig()
 
@@ -101,4 +107,19 @@ func thumbFilePath(id string) string {
 
 func getFileAndThumb(id string) (originFile, thumb string) {
 	return localFilePath(id), thumbFilePath(id)
+}
+
+func newDav(dirPath string) *webdav.Handler {
+	return &webdav.Handler{
+		Prefix: "/" + webdavFolderName,
+		FileSystem: webdav.Dir(dirPath),
+		LockSystem: webdav.NewMemLS(),
+		Logger: func(r *http.Request, err error) {
+			if err != nil {
+				log.Printf("WEBDAV [%s]: %s, ERROR: %s\n", r.Method, r.URL, err)
+			} else {
+				log.Printf("WEBDAV [%s]: %s \n", r.Method, r.URL)
+			}
+		},
+	}
 }

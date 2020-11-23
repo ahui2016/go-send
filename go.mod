@@ -7,5 +7,6 @@ require (
 	github.com/asdine/storm v2.1.2+incompatible
 	github.com/asdine/storm/v3 v3.2.1
 	go.etcd.io/bbolt v1.3.5 // indirect
+	golang.org/x/net v0.0.0-20191105084925-a882066a44e0
 	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
 )

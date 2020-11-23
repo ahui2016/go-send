@@ -248,13 +248,27 @@ func (db *DB) nextClipID() (nextID IncreaseID, err error) {
 
 // Insert .
 func (db *DB) Insert(message *Message) error {
+	// 检查容量冲突
 	if err := db.checkTotalSize(message.FileSize); err != nil {
 		return err
 	}
+
+	// 如果是 TextMsg, 并且内容已存在，则只更新日期。
+	if message.Type == model.TextMsg {
+		var m Message
+		err := db.DB.One("TextMsg", message.TextMsg, &m)
+		if err == nil {
+			return db.DB.UpdateField(&m, "UpdatedAt", goutil.TimeNow(model.ISO8601))
+		}
+	}
+
+	// 检查 ID 冲突
 	_, err := db.getByID(message.ID)
 	if err == nil {
 		return errors.New("id: " + message.ID + " already exists")
 	}
+
+	// ID 无冲突，可以保存新条目。
 	if err := db.DB.Save(message); err != nil {
 		return err
 	}

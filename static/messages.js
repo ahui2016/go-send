@@ -108,10 +108,9 @@ function doAfterInsert(item, message) {
   let delete_button = item.find('.DeleteIcon');
   delete_button.click(event => {
     delete_button.tooltip('hide');
-    const yesButton = $('#yes-button');
 
-    // clips 页面的删除效果。
-    if (page == 'Clips') {
+    // 如果是 TextMsg, 则不弹出对话框。
+    if (message.Type == 'TextMsg') {
       doDelete(event, function() {
         if (this.status == 200) {
           item.find('.Icon').hide();
@@ -125,13 +124,10 @@ function doAfterInsert(item, message) {
       return;
     }
 
+    const yesButton = $('#yes-button');
     $('#delete-dialog').modal('show');
     $('#id-in-modal').text(simple_id);
 
-    if (message.Type == 'TextMsg') {
-      $('#confirm-question').text('Delete this message?');
-      $('#filesize-in-modal').text('');
-    }
     if (message.Type == 'FileMsg') {
       $('#confirm-question').text('Delete this file?');
       $('#filesize-in-modal').text('(' + fileSizeToString(message.FileSize) + ')');
