@@ -103,59 +103,16 @@ function doAfterInsert(item, message) {
           up_button.show();
         });
   });
+}
 
-  // 删除按钮
-  let delete_button = item.find('.DeleteIcon');
-  delete_button.click(event => {
-    delete_button.tooltip('hide');
-
-    // 如果是 TextMsg, 则不弹出对话框。
-    if (message.Type == 'TextMsg') {
-      doDelete(event, function() {
-        if (this.status == 200) {
-          item.find('.Icon').hide();
-          item.find('.CopyIcon').show();
-          item.find('.card-subtitle').html('DELETED');
-          item.addClass('bg-light');
-        } else {
-          window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
-        }
-      });
-      return;
-    }
-
-    const yesButton = $('#yes-button');
-    $('#delete-dialog').modal('show');
-    $('#id-in-modal').text(simple_id);
-
-    if (message.Type == 'FileMsg') {
-      $('#confirm-question').text('Delete this file?');
-      $('#filesize-in-modal').text('(' + fileSizeToString(message.FileSize) + ')');
-    }
-
-    // 确认删除
-    yesButton.off().click(e => doDelete(e, function () {
-      if (this.status == 200) {
-        let infoMsg = 'id: ' + simple_id + ' is deleted';
-        item.hide('slow', function () {
-          insertInfoAlert(infoMsg, '#' + itemID);
-          item.remove();
-        });
-      } else {
-        window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
-      }
-    }));
-
-    function doDelete(event, onload) {
-      let url;
-      if (page == 'Messages') url = '/api/delete';
-      if (page == 'Clips') url = '/api/delete-clip';
-      let form = new FormData();
-      form.append('id', message.ID);
-      ajaxPost(form, url, yesButton, onload, function () {
-        $('#delete-dialog').modal('hide');
-      });
-    }
+function doDelete(event, message, onload) {
+  let url;
+  if (page == 'Messages') url = '/api/delete';
+  if (page == 'Clips') url = '/api/delete-clip';
+  let form = new FormData();
+  form.append('id', message.ID);
+  ajaxPost(form, url, yesButton, onload, function () {
+    $('#delete-dialog').modal('hide');
   });
 }
 
@@ -165,6 +122,22 @@ function insertTextMsg(message) {
   item.insertAfter('#file-msg-tmpl');
   item.find('.card-text').text(message.TextMsg);
 
+  // TextMsg 的删除按钮
+  let delete_button = item.find('.DeleteIcon');
+
+  delete_button.click(event => {
+    delete_button.tooltip('hide');
+    doDelete(event, message, function () {
+      if (this.status == 200) {
+        item.find('.Icon').hide();
+        item.find('.CopyIcon').show();
+        item.find('.card-subtitle').html('DELETED');
+        item.addClass('bg-light');
+      } else {
+        window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
+      }
+    });
+  });
 
   // 复制按钮
   const copyIcon = item.find('.CopyIcon');
@@ -196,6 +169,34 @@ function insertFileMsg(message) {
   let item = $('#file-msg-tmpl').contents().clone();
   // 插入时，要么插在 #file-msg-tmpl 后面，要么插在 #text-msg-tmpl 前面。
   item.insertAfter('#file-msg-tmpl');
+
+  // FileMsg 的删除按钮
+  let delete_button = item.find('.DeleteIcon');
+  delete_button.click(event => {
+    delete_button.tooltip('hide');
+
+    const yesButton = $('#yes-button');
+    $('#delete-dialog').modal('show');
+    $('#id-in-modal').text(simple_id);
+
+    if (message.Type == 'FileMsg') {
+      $('#confirm-question').text('Delete this file?');
+      $('#filesize-in-modal').text('(' + fileSizeToString(message.FileSize) + ')');
+    }
+
+    // 确认删除
+    yesButton.off().click(e => doDelete(e, message, function () {
+      if (this.status == 200) {
+        let infoMsg = 'id: ' + simple_id + ' is deleted';
+        item.hide('slow', function () {
+          insertInfoAlert(infoMsg, '#' + itemID);
+          item.remove();
+        });
+      } else {
+        window.alert(`Error: ${this.status} ${this.statusText} ${this.response}`);
+      }
+    }));
+  });
 
   let file = {name: message.FileName, type: message.FileType};
   if (file.type.startsWith('image/') || file.type.startsWith('video/')) {

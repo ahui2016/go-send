@@ -8,6 +8,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
@@ -32,7 +34,7 @@ func main() {
 	filesFS = http.StripPrefix("/files/", filesFS)
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
-	http.Handle("/webdav/", authWebDav(dav))
+	//http.HandleFunc("/webdav/", maxBodyLimit(authWebDav(dav)))
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/favicon.ico", faviconHandler)
@@ -102,18 +104,52 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	message, err := db.InsertTextMsg(r.FormValue("text-msg"))
+	textMsg := prependTitle(r.FormValue("text-msg"))
+
+	message, err := db.InsertTextMsg(textMsg)
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
 	goutil.JsonResponse(w, message, 200)
 }
 
+// prependTitle 当 s 是一个有效网址时获取该网页的 title 并附在网址前一起返回，
+// 如果 s 不是网址，或在处理过程中发生任何错误，则原封不动返回 s.
+func prependTitle(s string) string {
+	reAddr := regexp.MustCompile(`^https?://[-a-zA-Z0-9_+~@#$&=?/;:,.]+$`)
+	addr := strings.TrimSpace(s)
+	if !reAddr.MatchString(addr) {
+		return s
+	}
+	res, err := http.Get(addr)
+	// 如果发生任何错误，也返回原来的字符串。
+	if err != nil {
+		return s
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	// the head of the contents of res.Body
+	head := make([]byte, 1024)
+	if _, err := res.Body.Read(head); err != nil {
+		return s
+	}
+
+	reTitle := regexp.MustCompile(`<title>(.+)<`)
+	matches := reTitle.FindSubmatch(head)
+	// 这个 matches 要么为空，要么包含两个元素
+	if len(matches) >= 2 {
+		return string(matches[1]) + " " + addr
+	}
+	return s
+}
+
 func addClipMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	err := db.InsertClip(r.FormValue("text-msg"), config.ClipsLimit)
+	textMsg := prependTitle(r.FormValue("text-msg"))
+
+	err := db.InsertClip(textMsg, config.ClipsLimit)
 	goutil.CheckErr(w, err, 500)
 }
 
