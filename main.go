@@ -32,9 +32,9 @@ func main() {
 	filesFS = http.StripPrefix("/files/", filesFS)
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
-	http.Handle("/webdav/", authWebDav(dav))
+	http.Handle("/", authWebDav(dav))
 
-	http.HandleFunc("/", homePage)
+	http.HandleFunc("/home", homePage)
 	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.HandleFunc("/login", loginPage)
 	http.HandleFunc("/api/login", bodyLimit(loginHandler))
@@ -69,8 +69,8 @@ func main() {
 
 func homePage(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
-	case "/":
-		fallthrough
+	//case "/":
+	//	fallthrough
 	case "/home":
 		http.Redirect(w, r, "/messages", 302)
 	default:

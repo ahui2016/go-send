@@ -111,7 +111,6 @@ func getFileAndThumb(id string) (originFile, thumb string) {
 
 func newDav(dirPath string) *webdav.Handler {
 	return &webdav.Handler{
-		Prefix: "/" + webdavFolderName,
 		FileSystem: webdav.Dir(dirPath),
 		LockSystem: webdav.NewMemLS(),
 		Logger: func(r *http.Request, err error) {
