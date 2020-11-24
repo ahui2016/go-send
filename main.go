@@ -32,7 +32,7 @@ func main() {
 	filesFS = http.StripPrefix("/files/", filesFS)
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
-	http.Handle("/webdav", authWebDav(dav))
+	http.Handle("/webdav/", authWebDav(dav))
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/favicon.ico", faviconHandler)
