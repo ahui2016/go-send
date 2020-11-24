@@ -99,9 +99,14 @@ func handlerToFunc(h http.Handler) http.HandlerFunc {
 
 func authWebDav(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.FormValue("password") != config.Password {
+		_, password, ok := r.BasicAuth()
+		if !ok {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Access to WebDav"`)
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		if password != config.Password {
+			http.Error(w, "WabDAV: wrong password", http.StatusForbidden)
 			return
 		}
 		h.ServeHTTP(w, r)
