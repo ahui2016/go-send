@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ahui2016/goutil/graphics"
+	"html"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
@@ -104,53 +105,90 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	textMsg := prependTitle(r.FormValue("text-msg"))
-
+	textMsg, ok := createAnchor(r.FormValue("text-msg"))
 	message, err := db.InsertTextMsg(textMsg)
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
+
+	// 如果 ok, 表示 textMsg 是一个 anchor.
+	if ok {
+		message.FileType = model.GosendAnchor
+		if goutil.CheckErr(w, db.DB.Save(message), 500) {
+			return
+		}
+	}
 	goutil.JsonResponse(w, message, 200)
 }
 
-// prependTitle 当 s 是一个有效网址时获取该网页的 title 并附在网址前一起返回，
-// 如果 s 不是网址，或在处理过程中发生任何错误，则原封不动返回 s.
-func prependTitle(s string) string {
-	reAddr := regexp.MustCompile(`^https?://[-a-zA-Z0-9_+~@#$&=?/;:,.]+$`)
-	addr := strings.TrimSpace(s)
-	if !reAddr.MatchString(addr) {
-		return s
+// createAnchor 为了安全必须在 getTitle 成功后才生成 html,
+// 否则原封不动返回 s。
+func createAnchor(s string) (anchor string, ok bool) {
+	var link, title string
+	link, ok = isHttpURL(s)
+	log.Print("isHttpURL:", ok)
+	if ok {
+		title, ok = getTitle(link)
+		log.Print("getTitle:", ok)
+		if ok {
+			title = html.EscapeString(title)
+			anchor = fmt.Sprintf(`<a href="%s">%s</a>`, link, title)
+			return
+		}
 	}
+	return s, false
+}
+
+// isHttpURL 当 s 是一个有效网址时返回该网址与 true, 否则返回 false.
+func isHttpURL(s string) (addr string, ok bool) {
+	reAddr := regexp.MustCompile(`^https?://[-a-zA-Z0-9_+~@#$&=?/;:,.]+$`)
+	addr = strings.TrimSpace(s)
+	if !reAddr.MatchString(addr) {
+		return "", false
+	}
+	return addr, true
+}
+
+// getTitle 获取一个有效网址 addr 的网页的 title.
+func getTitle(addr string) (title string, ok bool) {
 	res, err := http.Get(addr)
-	// 如果发生任何错误，也返回原来的字符串。
 	if err != nil {
-		return s
+		return "", false
 	}
 	defer func() { _ = res.Body.Close() }()
 
-	// the head of the contents of res.Body
+	// the head of res.Body
 	head := make([]byte, 1024)
 	if _, err := res.Body.Read(head); err != nil {
-		return s
+		return "", false
 	}
 
 	reTitle := regexp.MustCompile(`<title>(.+)<`)
 	matches := reTitle.FindSubmatch(head)
 	// 这个 matches 要么为空，要么包含两个元素
 	if len(matches) >= 2 {
-		return string(matches[1]) + " " + addr
+		return string(matches[1]), true
 	}
-	return s
+	return "", false
 }
 
 func addClipMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	textMsg := prependTitle(r.FormValue("text-msg"))
+	textMsg, ok := createAnchor(r.FormValue("text-msg"))
+	clip, err := db.InsertClip(textMsg,  config.ClipsLimit)
+	if goutil.CheckErr(w, err, 500) {
+		return
+	}
 
-	err := db.InsertClip(textMsg, config.ClipsLimit)
-	goutil.CheckErr(w, err, 500)
+	// 如果 ok, 表示 textMsg 是一个 anchor.
+	if ok {
+		clip.FileType = model.GosendAnchor
+		if goutil.CheckErr(w, db.DB.Save(clip), 500) {
+			return
+		}
+	}
 }
 
 func getAllHandler(w http.ResponseWriter, _ *http.Request) {

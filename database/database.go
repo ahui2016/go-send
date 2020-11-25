@@ -277,33 +277,35 @@ func (db *DB) Insert(message *Message) error {
 
 // InsertClip inserts textMsg as a clip, and delete the oldest clip if
 // the numbers of clips is over limit.
-func (db *DB) InsertClip(textMsg string, limit int) error {
+func (db *DB) InsertClip(textMsg string, limit int) (*ClipText, error) {
 
 	// 检查内容冲突，如果内容已存在，则只更新日期。
 	var c ClipText
 	err := db.DB.One("TextMsg", textMsg, &c)
 	if err == nil {
-		return db.DB.UpdateField(&c, "UpdatedAt", goutil.TimeNow(model.ISO8601))
+		err = db.DB.UpdateField(&c, "UpdatedAt", goutil.TimeNow(model.ISO8601))
+		return &c, err
 	}
 
 	// 如果内容不存在，则新建 ClipText
 	clip, err := db.newClip(textMsg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// 检查 ID 冲突
 	if err := db.DB.One("ID", clip.ID, &c); err == nil {
-		return errors.New("clip id: " + clip.ID + " already exists")
+		return nil, errors.New("clip id: " + clip.ID + " already exists")
 	}
 
 	// ID 无冲突，可以保存新条目。
 	if err := db.DB.Save(clip); err != nil {
-		return err
+		return nil, err
 	}
 
 	// 检查数量，如果超过 clipTextLimit 则删除最老的数据。
-	return db.checkClipLimit(limit)
+	err = db.checkClipLimit(limit)
+	return clip, err
 }
 
 // 检查数量，如果超过 limit 则删除最老的数据。

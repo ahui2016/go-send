@@ -33,6 +33,10 @@ const (
 const (
 	// GosendZip 是自定义的文件类型，表示自动打包的文件，避免重复打包。
 	GosendZip = "gosend/zip"
+
+	// GosendAnchor 是自定义的文件类型，但不用于文件，而是用于 TextMsg,
+	// 表示该文本内容是网址 (html 的 a 标签)
+	GosendAnchor = "gosend/anchor"
 )
 
 // Message 表示一个数据表。
