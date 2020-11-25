@@ -361,6 +361,14 @@ func (db *DB) AllFiles() (files []Message, err error) {
 	return
 }
 
+// AllAnchors finds all anchors(FileType = GosendAnchor).
+func (db *DB) AllAnchors() (anchors []Message, err error) {
+	err = db.DB.Select(q.Eq("FileType", model.GosendAnchor)).
+		OrderBy("UpdatedAt").
+		Find(&anchors)
+	return
+}
+
 // DeleteAllFiles .
 func (db *DB) DeleteAllFiles() error {
 	err := db.DB.Select(q.Eq("Type", model.FileMsg)).Delete(new(Message))

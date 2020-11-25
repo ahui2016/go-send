@@ -12,6 +12,7 @@ function initData() {
   let url;
   if (page == 'Messages') url = '/api/all';
   if (page == 'Clips') url = '/api/all-clips';
+  if (page == 'Bookmarks') url = '/api/all-bookmarks';
 
   // 初始化本页面的说明。
   $('#about-page-icon').tooltip().click(() => {
@@ -21,8 +22,8 @@ function initData() {
   ajaxGet(url, null, function () {
         if (this.status == 200) {
 
-          // 条目数太少时不显示高级功能，Clips 页面也不显示高级功能
-          if (this.response.length >= 5) {
+          // 只在 Messages 页面显示高级功能，并且条目数太少时不显示高级功能
+          if (page == 'Messages' && this.response.length >= 5) {
             $('#commands-form').show();
           }
 
@@ -81,8 +82,7 @@ function doAfterInsert(item, message) {
     form.append('id', message.ID);
     up_button.hide();
 
-    let url;
-    if (page == 'Messages') url = '/api/update-datetime';
+    let url = '/api/update-datetime';
     if (page == 'Clips') url = '/api/update-clip-datetime';
     ajaxPost(form, url, null, function () {
           if (this.status == 200) {
@@ -152,8 +152,7 @@ function doAfterInsert(item, message) {
   });
 
   function doDelete(event, onload) {
-    let url;
-    if (page == 'Messages') url = '/api/delete';
+    let url = '/api/delete';
     if (page == 'Clips') url = '/api/delete-clip';
     let form = new FormData();
     form.append('id', message.ID);
@@ -271,6 +270,9 @@ function sendMsg(event) {
 // 提供高级命令的说明
 commands.change(event => {
   switch (event.currentTarget.value) {
+    case 'bookmarks':
+      commandHelp.text('只显示书签。这里的 “书签” 是指根据网址自动获取了标题并生成链接的项目。');
+      break;
     case 'zip-all-files':
       commandHelp.text('打包全部文件，不包括文字备忘。打包后，压缩包会显示在列表顶部。下载后请尽快删除以节省空间。');
       break;
@@ -300,6 +302,10 @@ executeBtn.click(event => {
     insertInfoAlert('请从下拉菜单选择后再执行。', $('#all-messages'));
     commands.focus();
     return;
+  }
+
+  if (command == 'bookmarks') {
+    window.location = '/bookmarks';
   }
 
   let form = new FormData();

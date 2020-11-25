@@ -56,6 +56,9 @@ func main() {
 	http.HandleFunc("/api/execute-command", bodyLimit(checkLogin(executeCommand)))
 	http.HandleFunc("/api/total-size", bodyLimit(checkLogin(getTotalSize)))
 
+	http.HandleFunc("/bookmarks", checkLogin(bookmarksPage))
+	http.HandleFunc("/api/all-bookmarks", bodyLimit(checkLogin(getAllAnchors)))
+
 	http.HandleFunc("/clips", checkLogin(clipsPage))
 	http.HandleFunc("/api/all-clips", bodyLimit(checkLogin(getAllClips)))
 	http.HandleFunc("/api/add-clip", bodyLimit(checkPassword(addClipMsg)))
@@ -96,6 +99,10 @@ func addFilePage(w http.ResponseWriter, r *http.Request) {
 
 func messagesPage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/messages.html")
+}
+
+func bookmarksPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/bookmarks.html")
 }
 
 func clipsPage(w http.ResponseWriter, r *http.Request) {
@@ -157,7 +164,7 @@ func getTitle(addr string) (title string, ok bool) {
 	defer func() { _ = res.Body.Close() }()
 
 	// the head of res.Body
-	head := make([]byte, 1024 * 10)
+	head := make([]byte, 1 << 19)
 	if _, err := res.Body.Read(head); err != nil {
 		return "", false
 	}
@@ -178,23 +185,23 @@ func addClipMsg(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
 
-	textMsg, ok := createAnchor(r.FormValue("text-msg"))
-	clip, err := db.InsertClip(textMsg,  config.ClipsLimit)
+	textMsg := r.FormValue("text-msg")
+	_, err := db.InsertClip(textMsg,  config.ClipsLimit)
 	if goutil.CheckErr(w, err, 500) {
 		return
-	}
-
-	// 如果 ok, 表示 textMsg 是一个 anchor.
-	if ok {
-		clip.FileType = model.GosendAnchor
-		if goutil.CheckErr(w, db.DB.Save(clip), 500) {
-			return
-		}
 	}
 }
 
 func getAllHandler(w http.ResponseWriter, _ *http.Request) {
 	all, err := db.AllByUpdatedAt()
+	if goutil.CheckErr(w, err, 500) {
+		return
+	}
+	goutil.JsonResponse(w, all, 200)
+}
+
+func getAllAnchors(w http.ResponseWriter, _ *http.Request) {
+	all, err := db.AllAnchors()
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
