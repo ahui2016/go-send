@@ -169,12 +169,16 @@ function insertTextMsg(message) {
   item.insertAfter('#file-msg-tmpl');
 
   // 如果是 gosend/anchor 则插入 html
+  let copyText;
   const cardText = item.find('.card-text');
   if (message.FileType == 'gosend/anchor') {
     cardText.html(message.TextMsg);
-    cardText.find('a').addClass('text-info').attr('target', '_blank');
+    const anchor = cardText.find('a');
+    anchor.addClass('text-info').attr('target', '_blank');
+    copyText = anchor.text();
   } else {
     cardText.text(message.TextMsg);
+    copyText = message.TextMsg;
   }
 
   // 复制按钮
@@ -183,7 +187,7 @@ function insertTextMsg(message) {
   copyIcon.attr('id', copyBtnID);
   const clipboard = new ClipboardJS('#' + copyBtnID, {
     text: function () {
-      return cardText.find('a').text();
+      return copyText;
     }
   });
   clipboard.on('success', () => {

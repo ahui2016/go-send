@@ -35,7 +35,8 @@ func main() {
 	filesFS = http.StripPrefix("/files/", filesFS)
 	http.Handle("/files/", checkLoginForFileServer(filesFS))
 
-	//http.HandleFunc("/webdav/", maxBodyLimit(authWebDav(dav)))
+	// 本程序有一个简单的 webdav 功能，删除下面这行开头的双斜杠即可使用。
+	// http.HandleFunc("/webdav/", maxBodyLimit(authWebDav(dav)))
 
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/favicon.ico", faviconHandler)
@@ -168,7 +169,7 @@ func getTitle(addr string) (title string, ok bool) {
 	matches := reTitle.FindStringSubmatch(headStr)
 	// 这个 matches 要么为空，要么包含两个元素
 	if len(matches) >= 2 {
-		return string(matches[1]), true
+		return matches[1], true
 	}
 	return "", false
 }
