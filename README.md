@@ -127,7 +127,7 @@ $ ./go-send &
 
 ## Go-send Project
 
-由于 go-send 对 Windows, iOS, Android, Linux, macOS, Chrome, Firefox 等不同平台提供（或计划提供）
+由于 go-send 对 Windows, iOS, Android, Linux, macOS 等不同平台提供（或计划提供）
 便捷的使用方法，因此很多功能不方便直接写在主程序主仓库里，显得稍有点乱，因此建了一个 project 页面汇总信息：
 
 https://github.com/users/ahui2016/projects/1

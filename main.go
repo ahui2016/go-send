@@ -126,10 +126,8 @@ func addTextMsg(w http.ResponseWriter, r *http.Request) {
 func createAnchor(s string) (anchor string, ok bool) {
 	var link, title string
 	link, ok = isHttpURL(s)
-	log.Print("isHttpURL:", ok)
 	if ok {
 		title, ok = getTitle(link)
-		log.Print("getTitle:", ok)
 		if ok {
 			title = html.EscapeString(title)
 			anchor = fmt.Sprintf(`<a href="%s">%s</a>`, link, title)
@@ -163,8 +161,11 @@ func getTitle(addr string) (title string, ok bool) {
 		return "", false
 	}
 
-	reTitle := regexp.MustCompile(`<title>(.+)<`)
-	matches := reTitle.FindSubmatch(head)
+	// 我服了，有的网站在 title 里加换行符
+	headStr := strings.ReplaceAll(string(head), "\n", " ")
+
+	reTitle := regexp.MustCompile(`<title>(.+)</title>`)
+	matches := reTitle.FindStringSubmatch(headStr)
 	// 这个 matches 要么为空，要么包含两个元素
 	if len(matches) >= 2 {
 		return string(matches[1]), true

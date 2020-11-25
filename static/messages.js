@@ -172,6 +172,7 @@ function insertTextMsg(message) {
   let cardText = item.find('.card-text');
   if (message.FileType == 'gosend/anchor') {
     cardText.html(message.TextMsg);
+    cardText.find('a').addClass('text-info').attr('target', '_blank');
   } else {
     cardText.text(message.TextMsg);
   }
