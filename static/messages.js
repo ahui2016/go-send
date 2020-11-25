@@ -169,7 +169,7 @@ function insertTextMsg(message) {
   item.insertAfter('#file-msg-tmpl');
 
   // 如果是 gosend/anchor 则插入 html
-  let cardText = item.find('.card-text');
+  const cardText = item.find('.card-text');
   if (message.FileType == 'gosend/anchor') {
     cardText.html(message.TextMsg);
     cardText.find('a').addClass('text-info').attr('target', '_blank');
@@ -183,7 +183,7 @@ function insertTextMsg(message) {
   copyIcon.attr('id', copyBtnID);
   const clipboard = new ClipboardJS('#' + copyBtnID, {
     text: function () {
-      return message.TextMsg;
+      return cardText.find('a').text();
     }
   });
   clipboard.on('success', () => {
