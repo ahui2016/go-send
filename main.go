@@ -157,7 +157,7 @@ func getTitle(addr string) (title string, ok bool) {
 	defer func() { _ = res.Body.Close() }()
 
 	// the head of res.Body
-	head := make([]byte, 2048)
+	head := make([]byte, 1024 * 10)
 	if _, err := res.Body.Read(head); err != nil {
 		return "", false
 	}
