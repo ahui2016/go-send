@@ -140,7 +140,7 @@ func createAnchor(s string) (anchor string, ok bool) {
 
 // isHttpURL 当 s 是一个有效网址时返回该网址与 true, 否则返回 false.
 func isHttpURL(s string) (addr string, ok bool) {
-	reAddr := regexp.MustCompile(`^https?://[-a-zA-Z0-9_+~@#$&=?/;:,.]+$`)
+	reAddr := regexp.MustCompile(`^https?://[-a-zA-Z0-9_+~@#$%&=?/;:,.]+$`)
 	addr = strings.TrimSpace(s)
 	if !reAddr.MatchString(addr) {
 		return "", false
@@ -157,7 +157,7 @@ func getTitle(addr string) (title string, ok bool) {
 	defer func() { _ = res.Body.Close() }()
 
 	// the head of res.Body
-	head := make([]byte, 1024)
+	head := make([]byte, 2048)
 	if _, err := res.Body.Read(head); err != nil {
 		return "", false
 	}
