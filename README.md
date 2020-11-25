@@ -83,6 +83,7 @@ $ ./go-send &
 ### 设置 Nginx 及 https
 
 - 本软件需要在浏览器里生成 SHA256, 而浏览器要求在 https 模式下才能使用 SHA256 的功能，因此必须配置 https
+- 如果不使用发送文件的功能，只使用文本备忘功能，不配置 https 也行。
 - 在 Nginx 配置文件 (通常是 /etc/nginx/nginx.conf) 中添加以下内容：
   ```
   server {
