@@ -74,7 +74,7 @@ $ ./go-send &
 - 默认密码是 abc, 默认端口是 127.0.0.1:80
 - 第一次运行 go-send 时，会在 $HOME 目录自动新建一个文件夹 gosend_data_folder, 并且在该文件夹内生成 config 文件，直接用文本编辑器修改 config 文件即可设置密码和端口，修改保存后，重启 go-send 生效。
   ```sh
-  $ cd vim ~/gosend_data_folder/config (修改、保存、退出)
+  $ vim ~/gosend_data_folder/config (修改、保存、退出)
   $ killall go-send
   $ cd ~/go-send
   $ ./go-send &
