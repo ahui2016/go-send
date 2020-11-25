@@ -105,7 +105,8 @@ function doAfterInsert(item, message) {
   });
 
   // 删除按钮
-  let delete_button = item.find('.DeleteIcon');
+  const delete_button = item.find('.DeleteIcon');
+  const yesButton = $('#yes-button');
 
   // 如果是 TextMsg, 则不弹出对话框
   if (message.Type == 'TextMsg') {
@@ -128,7 +129,6 @@ function doAfterInsert(item, message) {
   delete_button.click(() => {
     delete_button.tooltip('hide');
 
-    const yesButton = $('#yes-button');
     $('#delete-dialog').modal('show');
     $('#id-in-modal').text(simple_id);
 
@@ -151,17 +151,16 @@ function doAfterInsert(item, message) {
     }));
   });
 
-}
-
-function doDelete(event, onload) {
-  let url;
-  if (page == 'Messages') url = '/api/delete';
-  if (page == 'Clips') url = '/api/delete-clip';
-  let form = new FormData();
-  form.append('id', message.ID);
-  ajaxPost(form, url, yesButton, onload, function () {
-    $('#delete-dialog').modal('hide');
-  });
+  function doDelete(event, onload) {
+    let url;
+    if (page == 'Messages') url = '/api/delete';
+    if (page == 'Clips') url = '/api/delete-clip';
+    let form = new FormData();
+    form.append('id', message.ID);
+    ajaxPost(form, url, yesButton, onload, function () {
+      $('#delete-dialog').modal('hide');
+    });
+  }
 }
 
 function insertTextMsg(message) {
