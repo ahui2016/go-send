@@ -75,9 +75,8 @@ $ ./go-send &
 - 第一次运行 go-send 时，会在 $HOME 目录自动新建一个文件夹 gosend_data_folder, 并且在该文件夹内生成 config 文件，直接用文本编辑器修改 config 文件即可设置密码和端口，修改保存后，重启 go-send 生效。
   ```sh
   $ vim ~/gosend_data_folder/config (修改、保存、退出)
-  $ killall go-send
   $ cd ~/go-send
-  $ ./go-send &
+  $ killall go-send && ./go-send &
   ```
 
 ### 设置 Nginx 及 https

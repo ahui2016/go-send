@@ -249,7 +249,7 @@ executeBtn.click(event => {
     event.preventDefault();
 
     let command = commands.val();
-    if (command == 'delete-10-items' || command == 'delete-grey-items') {
+    if (command != 'zip-all-files') {
         insertInfoAlert('演示版暂不提供此功能，正式版可用', $('#all-messages'));
         return;
     }

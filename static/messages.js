@@ -175,7 +175,7 @@ function insertTextMsg(message) {
     cardText.html(message.TextMsg);
     const anchor = cardText.find('a');
     anchor.addClass('text-info').attr('target', '_blank');
-    copyText = anchor.text();
+    copyText = anchor.attr('href');
   } else {
     cardText.text(message.TextMsg);
     copyText = message.TextMsg;
