@@ -306,6 +306,7 @@ executeBtn.click(event => {
 
   if (command == 'bookmarks') {
     window.location = '/bookmarks';
+    return;
   }
 
   let form = new FormData();

@@ -163,22 +163,23 @@ func getTitle(addr string) (title string, ok bool) {
 	}
 	defer func() { _ = res.Body.Close() }()
 
-	// the head of res.Body
-	head := make([]byte, 1 << 19)
-	if _, err := res.Body.Read(head); err != nil {
-		return "", false
-	}
-
-	// 我服了，有的网站在 title 里加换行符
-	headStr := strings.ReplaceAll(string(head), "\n", " ")
-
 	reTitle := regexp.MustCompile(`<title>(.+)</title>`)
-	matches := reTitle.FindStringSubmatch(headStr)
-	// 这个 matches 要么为空，要么包含两个元素
-	if len(matches) >= 2 {
-		return matches[1], true
+	blob := make([]byte, 1024)
+	for {
+		_, err := res.Body.Read(blob)
+		// 我服了，有的网站在 title 里加换行符
+		headStr := strings.ReplaceAll(string(blob), "\n", " ")
+		matches := reTitle.FindStringSubmatch(headStr)
+		// 这个 matches 要么为空，要么包含两个元素
+		if len(matches) >= 2 {
+			return matches[1], true
+		}
+
+		// 由于 EOF 也属于错误，但即使 EOF 也有可能读取出一些数据，因此 err 延后处理。
+		if err != nil {
+			return "", false
+		}
 	}
-	return "", false
 }
 
 func addClipMsg(w http.ResponseWriter, r *http.Request) {
@@ -186,7 +187,7 @@ func addClipMsg(w http.ResponseWriter, r *http.Request) {
 	defer db.Unlock()
 
 	textMsg := r.FormValue("text-msg")
-	_, err := db.InsertClip(textMsg,  config.ClipsLimit)
+	_, err := db.InsertClip(textMsg, config.ClipsLimit)
 	if goutil.CheckErr(w, err, 500) {
 		return
 	}
