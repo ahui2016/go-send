@@ -2,13 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/ahui2016/go-send/database"
-	"github.com/ahui2016/goutil"
-	"golang.org/x/net/webdav"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
+
+	"github.com/ahui2016/go-send/database"
+	"github.com/ahui2016/goutil"
+	"golang.org/x/net/webdav"
 )
 
 const (
@@ -27,7 +29,7 @@ const (
 	defaultClipsLimit = 100
 
 	// 99 days, for session
-	maxAge = 60 * 60 * 24 * 99
+	maxAge = 99 * time.Hour * 24
 
 	// databaseCapacity 控制数据库总容量，
 	// maxBodySize 控制单个文件的体积。
@@ -111,7 +113,7 @@ func getFileAndThumb(id string) (originFile, thumb string) {
 
 func newDav(dirPath string) *webdav.Handler {
 	return &webdav.Handler{
-		Prefix: "/" + webdavFolderName,
+		Prefix:     "/" + webdavFolderName,
 		FileSystem: webdav.Dir(dirPath),
 		LockSystem: webdav.NewMemLS(),
 		Logger: func(r *http.Request, err error) {

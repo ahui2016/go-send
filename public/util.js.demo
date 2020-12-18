@@ -1,7 +1,7 @@
 const thumbWidth = 128, thumbHeight = 128;
 
 // 文件保质期 (变灰时间), 该值应等于后端的 database.turnGrey
-const TurnGrey = { n: 15, unit: 'days' };
+const TurnGrey = { n: 3, unit: 'days' };
 
 // 向服务器提交表单，在等待过程中 btn 会失效，避免重复提交。
 function ajaxPost(form, url, btn, onload, onloadend) {
@@ -110,7 +110,7 @@ function fileSizeToString(fileSize, fixed) {
   if (fixed == null) {
     fixed = 2
   }
-  const sizeMB = fileSize / 1024 / 1024;
+  let sizeMB = fileSize / 1024 / 1024;
   if (sizeMB < 1) {
       return `${(sizeMB * 1024).toFixed(fixed)} KB`;
   }

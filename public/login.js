@@ -12,7 +12,7 @@ loginBtn.click(event => {
     let form = new FormData();
     form.append('password', password);
 
-    ajaxPostWithSpinner(form, '/api/login', 'login', function() {
+    ajaxPostWithSpinner(form, '/login', 'login', function() {
         if (this.status == 200) {
             loginBtn.prop('disabled', true);
             window.location = '/home';

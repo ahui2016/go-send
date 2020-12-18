@@ -8,12 +8,15 @@ import (
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
-	"github.com/ahui2016/goutil/session"
 	"github.com/asdine/storm/v3"
 	"github.com/asdine/storm/v3/q"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 const (
+	cookieName = "GosendCookie"
+
 	// 文件的最长保存时间
 	keepAlive = time.Hour * 24 * 30 // 30 days
 
@@ -40,20 +43,23 @@ type DB struct {
 	path     string
 	capacity int64
 	DB       *storm.DB
-	Sess     *session.Manager
+	Sess     *session.Store
 
 	// 只在 package database 外部使用锁，不在 package database 内部使用锁。
 	sync.Mutex
 }
 
 // Open .
-func (db *DB) Open(maxAge int, cap int64, dbPath string) (err error) {
+func (db *DB) Open(maxAge time.Duration, cap int64, dbPath string) (err error) {
 	if db.DB, err = storm.Open(dbPath); err != nil {
 		return err
 	}
 	db.path = dbPath
 	db.capacity = cap
-	db.Sess = session.NewManager(maxAge)
+	db.Sess = session.New(session.Config{
+		Expiration: maxAge,
+		CookieName: cookieName,
+	})
 	err1 := db.createIndexes()
 	err2 := db.initFirstID()
 	err3 := db.initFirstClipID()
@@ -332,7 +338,7 @@ func (db *DB) Delete(id string) error {
 	return db.addTotalSize(-message.FileSize)
 }
 
-// Delete a clip by id
+// DeleteClip a clip by id
 func (db *DB) DeleteClip(id string) error {
 	return db.DB.Select(q.Eq("ID", id)).Delete(new(ClipText))
 }
@@ -378,6 +384,7 @@ func (db *DB) DeleteAllFiles() error {
 	return db.recountTotalSize()
 }
 
+// DeleteAllClips .
 func (db *DB) DeleteAllClips() error {
 	clip := ClipText{}
 	err1 := db.DB.Drop(&clip)
@@ -452,7 +459,7 @@ func itemsToIDs(items interface{}) (IDs []string) {
 			IDs = append(IDs, arr[i].ID)
 		}
 	default:
-		panic(fmt.Errorf("wrong type: %T\n", arr))
+		panic(fmt.Errorf("wrong type: %T", arr))
 	}
 	return
 }
@@ -486,4 +493,24 @@ func (db *DB) InsertTextMsg(textMsg string) (message *Message, err error) {
 		return
 	}
 	return message, db.Insert(message)
+}
+
+// SessionCheck .
+func (db *DB) SessionCheck(c *fiber.Ctx) bool {
+	sess, err := db.Sess.Get(c)
+
+	if err != nil || sess.Get(cookieName) == nil {
+		return false
+	}
+	return sess.Get(cookieName).(bool)
+}
+
+// SessionSet .
+func (db *DB) SessionSet(c *fiber.Ctx) error {
+	sess, err := db.Sess.Get(c)
+	if err != nil {
+		return err
+	}
+	sess.Set(cookieName, true)
+	return sess.Save()
 }

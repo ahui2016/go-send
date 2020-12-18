@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/ahui2016/goutil/graphics"
 	"html"
 	"io/ioutil"
 	"log"
@@ -11,6 +10,9 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/ahui2016/goutil/graphics"
+	"github.com/gofiber/fiber/v2"
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
@@ -25,6 +27,14 @@ type (
 func main() {
 	defer func() { _ = db.Close() }()
 
+	app := fiber.New()
+
+	app.Static("/", "./public")
+
+	app.Get("/", homePage)
+	app.Get("/home", homePage)
+	app.Post("/login", loginHandler)
+
 	fs := http.FileServer(http.Dir("public"))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
 
@@ -38,16 +48,15 @@ func main() {
 	// 本程序有一个简单的 webdav 功能，删除下面这行开头的双斜杠即可使用。
 	// http.HandleFunc("/webdav/", maxBodyLimit(authWebDav(dav)))
 
-	http.HandleFunc("/", homePage)
+	// http.HandleFunc("/", homePage)
 	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.HandleFunc("/login", loginPage)
-	http.HandleFunc("/api/login", bodyLimit(loginHandler))
+	// http.HandleFunc("/api/login", bodyLimit(loginHandler))
 
 	http.HandleFunc("/send-file", checkLogin(addFilePage))
 	http.HandleFunc("/api/checksum", bodyLimit(checkLogin(checksumHandler)))
 	http.HandleFunc("/api/upload-file", maxBodyLimit(checkLogin(uploadHandler)))
 
-	http.HandleFunc("/messages", checkLogin(messagesPage))
 	http.HandleFunc("/api/all", bodyLimit(checkLogin(getAllHandler)))
 	http.HandleFunc("/api/add-text-msg", bodyLimit(checkLogin(addTextMsg)))
 	http.HandleFunc("/api/delete", bodyLimit(checkLogin(deleteHandler)))
@@ -71,9 +80,11 @@ func main() {
 	http.HandleFunc("/api/add-photo", maxBodyLimit(checkPassword(simpleUploadHandler)))
 
 	log.Print(config.Address)
-	log.Fatal(http.ListenAndServe(config.Address, nil))
+	// log.Fatal(http.ListenAndServe(config.Address, nil))
+	log.Fatal(app.Listen(config.Address))
 }
 
+/*
 func homePage(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/":
@@ -84,6 +95,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 	}
 }
+*/
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "public/icons/favicon.ico")
@@ -97,9 +109,9 @@ func addFilePage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/send-file.html")
 }
 
-func messagesPage(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "static/messages.html")
-}
+// func messagesPage(w http.ResponseWriter, r *http.Request) {
+// 	http.ServeFile(w, r, "static/messages.html")
+// }
 
 func bookmarksPage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/bookmarks.html")
@@ -479,6 +491,7 @@ func deleteFilesAndThumb(files []Message) error {
 	return goutil.DeleteFiles(filePaths...)
 }
 
+/*
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if isLoggedIn(r) {
 		goutil.JsonMessage(w, "already logged in", 200)
@@ -497,6 +510,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	passwordTry = 0
 	db.Sess.Add(w, goutil.NewID())
 }
+*/
 
 func updateDatetime(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
