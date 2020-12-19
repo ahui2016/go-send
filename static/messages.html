@@ -6,16 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/bootstrap.min.css">
+    <link rel="stylesheet" href="/public/bootstrap.min.css">
 
     <title>Messages .. go-send</title>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="/jquery-3.5.1.min.js"></script>
-    <script src="/bootstrap.bundle.min.js"></script>
-    <script src="/dayjs.min.js"></script>
-    <script src="/clipboard.min.js"></script>
+    <script src="/public/jquery-3.5.1.min.js"></script>
+    <script src="/public/bootstrap.bundle.min.js"></script>
+    <script src="/public/dayjs.min.js"></script>
+    <script src="/public/clipboard.min.js"></script>
 
     <style>
 .Icon {
@@ -42,21 +42,21 @@
       <nav class="navbar navbar-light bg-light mt-1 mb-3">
         <div class="navbar-brand mb-0 h1">
           <span id="page-name">Messages</span>
-          <img id="about-page-icon" src="/icons/info-circle.svg" alt="info"
+          <img id="about-page-icon" src="/public/icons/info-circle.svg" alt="info"
                title="显示或隐藏说明" data-toggle="tooltip" data-placement="right"
                style="cursor: pointer;">
         </div>
         <div class="btn-toolbar" role="toolbar" aria-label="nav bar">
           <div class="btn-group" role="group">
             <a role="button" class="btn btn-outline-dark NavbarBtn"
-               href="/clips" data-toggle="tooltip" title="clips">
+               href="/static/clips.html" data-toggle="tooltip" title="clips">
               <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-clipboard" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
                 <path fill-rule="evenodd" d="M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
               </svg>
             </a>
             <a role="button" class="btn btn-outline-dark NavbarBtn"
-                  href="/send-file" data-toggle="tooltip" title="send file">
+                  href="/static/send-file.html" data-toggle="tooltip" title="send file">
               <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-file-earmark-plus" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4 0h5.5v1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h1V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
                 <path d="M9.5 3V0L14 4.5h-3A1.5 1.5 0 0 1 9.5 3z"/>
@@ -296,7 +296,7 @@
       </div>
     </div>
 
-    <script src="/util.js"></script>
-    <script src="/messages.js"></script>
+    <script src="/public/util.js"></script>
+    <script src="/static/messages.js"></script>
   </body>
 </html>

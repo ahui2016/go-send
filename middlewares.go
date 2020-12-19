@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ahui2016/goutil"
+	"github.com/gofiber/fiber/v2"
 )
 
 // setBodySize(fn, defaultBodySize)
@@ -58,6 +59,23 @@ func checkLoginForFileServer(h http.Handler) http.HandlerFunc {
 		}
 		h.ServeHTTP(w, r)
 	}
+}
+
+func checkLoginHtml(c *fiber.Ctx) error {
+	if isLoggedOut2(c) {
+		if err := checkPasswordTry2(c); err != nil {
+			return err
+		}
+		return c.SendFile("./public/login.html")
+	}
+	return c.Next()
+}
+
+func checkLoginJson(c *fiber.Ctx) error {
+	if isLoggedOut2(c) {
+		return jsonError(c, "Require Login", fiber.StatusUnauthorized)
+	}
+	return c.Next()
 }
 
 func checkLogin(fn http.HandlerFunc) http.HandlerFunc {

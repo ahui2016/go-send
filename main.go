@@ -13,6 +13,8 @@ import (
 
 	"github.com/ahui2016/goutil/graphics"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 
 	"github.com/ahui2016/go-send/model"
 	"github.com/ahui2016/goutil"
@@ -29,10 +31,19 @@ func main() {
 
 	app := fiber.New()
 
-	app.Static("/", "./public")
+	app.Use(limiter.New())
 
-	app.Get("/", homePage)
+	app.Static("/public", "./public")
+
+	app.Use(favicon.New(favicon.Config{File: "public/icons/favicon.ico"}))
+
+	app.Use("/static", checkLoginHtml)
+	app.Static("/static", "./static")
+
+	app.Use("/home", checkLoginHtml)
 	app.Get("/home", homePage)
+
+	app.Get("/", redirectToHome)
 	app.Post("/login", loginHandler)
 
 	fs := http.FileServer(http.Dir("public"))
@@ -49,11 +60,11 @@ func main() {
 	// http.HandleFunc("/webdav/", maxBodyLimit(authWebDav(dav)))
 
 	// http.HandleFunc("/", homePage)
-	http.HandleFunc("/favicon.ico", faviconHandler)
-	http.HandleFunc("/login", loginPage)
+	// http.HandleFunc("/favicon.ico", faviconHandler)
+	// http.HandleFunc("/login", loginPage)
 	// http.HandleFunc("/api/login", bodyLimit(loginHandler))
 
-	http.HandleFunc("/send-file", checkLogin(addFilePage))
+	// http.HandleFunc("/send-file", checkLogin(addFilePage))
 	http.HandleFunc("/api/checksum", bodyLimit(checkLogin(checksumHandler)))
 	http.HandleFunc("/api/upload-file", maxBodyLimit(checkLogin(uploadHandler)))
 
