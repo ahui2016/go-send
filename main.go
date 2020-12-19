@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ahui2016/goutil/graphics"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -31,7 +30,9 @@ func main() {
 
 	app := fiber.New()
 
-	app.Use(limiter.New())
+	app.Use(limiter.New(limiter.Config{
+		Max: 300,
+	}))
 
 	app.Static("/public", "./public")
 
@@ -39,12 +40,17 @@ func main() {
 
 	app.Use("/static", checkLoginHtml)
 	app.Static("/static", "./static")
+	app.Use("/files", checkLoginHtml)
+	app.Static("/files", filesDir)
 
 	app.Use("/home", checkLoginHtml)
 	app.Get("/home", homePage)
 
 	app.Get("/", redirectToHome)
 	app.Post("/login", loginHandler)
+
+	api := app.Group("/api", checkLoginJson)
+	api.Get("/all", getAllHandler)
 
 	fs := http.FileServer(http.Dir("public"))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
@@ -68,7 +74,7 @@ func main() {
 	http.HandleFunc("/api/checksum", bodyLimit(checkLogin(checksumHandler)))
 	http.HandleFunc("/api/upload-file", maxBodyLimit(checkLogin(uploadHandler)))
 
-	http.HandleFunc("/api/all", bodyLimit(checkLogin(getAllHandler)))
+	// http.HandleFunc("/api/all", bodyLimit(checkLogin(getAllHandler)))
 	http.HandleFunc("/api/add-text-msg", bodyLimit(checkLogin(addTextMsg)))
 	http.HandleFunc("/api/delete", bodyLimit(checkLogin(deleteHandler)))
 
@@ -76,10 +82,10 @@ func main() {
 	http.HandleFunc("/api/execute-command", bodyLimit(checkLogin(executeCommand)))
 	http.HandleFunc("/api/total-size", bodyLimit(checkLogin(getTotalSize)))
 
-	http.HandleFunc("/bookmarks", checkLogin(bookmarksPage))
+	// http.HandleFunc("/bookmarks", checkLogin(bookmarksPage))
 	http.HandleFunc("/api/all-bookmarks", bodyLimit(checkLogin(getAllAnchors)))
 
-	http.HandleFunc("/clips", checkLogin(clipsPage))
+	// http.HandleFunc("/clips", checkLogin(clipsPage))
 	http.HandleFunc("/api/all-clips", bodyLimit(checkLogin(getAllClips)))
 	http.HandleFunc("/api/add-clip", bodyLimit(checkPassword(addClipMsg)))
 	http.HandleFunc("/api/delete-clip", bodyLimit(checkLogin(deleteClip)))
@@ -216,6 +222,7 @@ func addClipMsg(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
 func getAllHandler(w http.ResponseWriter, _ *http.Request) {
 	all, err := db.AllByUpdatedAt()
 	if goutil.CheckErr(w, err, 500) {
@@ -223,6 +230,7 @@ func getAllHandler(w http.ResponseWriter, _ *http.Request) {
 	}
 	goutil.JsonResponse(w, all, 200)
 }
+*/
 
 func getAllAnchors(w http.ResponseWriter, _ *http.Request) {
 	all, err := db.AllAnchors()
@@ -240,6 +248,7 @@ func getAllClips(w http.ResponseWriter, _ *http.Request) {
 	goutil.JsonResponse(w, all, 200)
 }
 
+/*
 func checksumHandler(w http.ResponseWriter, r *http.Request) {
 	hashHex := r.FormValue("hashHex")
 	var message Message
@@ -259,7 +268,9 @@ func checksumHandler(w http.ResponseWriter, r *http.Request) {
 	// err == nil, 正常找到已存在 hashHex, 表示发生文件冲突。
 	goutil.JsonMessage(w, "Checksum Already Exists", 400)
 }
+*/
 
+/*
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	db.Lock()
 	defer db.Unlock()
@@ -302,6 +313,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// 自动删除过期条目
 	goutil.CheckErr(w, deleteExpiredItems(), 500)
 }
+*/
 
 func getThumbnail(r *http.Request) ([]byte, error) {
 	file, _, err := r.FormFile("thumbnail")
@@ -328,18 +340,6 @@ func writeFile(message *Message, fileContents []byte) error {
 		}
 	}
 	return nil
-}
-
-// checkImage 在 message 是图片是检查该图片能否正常使用，
-// 如果不能正常使用，向 w 写入错误消息并返回 true 表示有错误。
-func checkImage(w http.ResponseWriter, message *Message, img []byte) (hasErr bool) {
-	if message.IsImage() {
-		if _, err := graphics.Thumbnail(img, 0, 0); err != nil {
-			goutil.JsonMessage(w, "该图片有问题，拒绝接收", 500)
-			return true
-		}
-	}
-	return false
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/ahui2016/goutil"
 	"github.com/gofiber/fiber/v2"
@@ -46,6 +45,7 @@ func checkContentLength(r *http.Request, length int64) error {
 	return nil
 }
 
+/*
 func checkLoginForFileServer(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if passwordTry >= passwordMaxTry {
@@ -60,41 +60,23 @@ func checkLoginForFileServer(h http.Handler) http.HandlerFunc {
 		h.ServeHTTP(w, r)
 	}
 }
+*/
 
 func checkLoginHtml(c *fiber.Ctx) error {
-	if isLoggedOut2(c) {
-		if err := checkPasswordTry2(c); err != nil {
-			return err
+	if isLoggedOut(c) {
+		if err := checkPasswordTry(c); err != nil {
+			return jsonErr500(c, err)
 		}
-		return c.SendFile("./public/login.html")
+		return c.Redirect("/public/login.html")
 	}
 	return c.Next()
 }
 
 func checkLoginJson(c *fiber.Ctx) error {
-	if isLoggedOut2(c) {
+	if isLoggedOut(c) {
 		return jsonError(c, "Require Login", fiber.StatusUnauthorized)
 	}
 	return c.Next()
-}
-
-func checkLogin(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if isLoggedOut(r) {
-			// 凡是以 "/api/" 开头的请求都返回 json 消息。
-			if strings.HasPrefix(r.URL.Path, "/api/") {
-				goutil.JsonRequireLogin(w)
-				return
-			}
-			// 不是以 "/api/" 开头的都是页面。
-			if checkPasswordTry(w) {
-				return
-			}
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-		fn(w, r)
-	}
 }
 
 func checkPassword(fn http.HandlerFunc) http.HandlerFunc {
@@ -129,22 +111,4 @@ func authWebDav(h http.Handler) http.HandlerFunc {
 		}
 		h.ServeHTTP(w, r)
 	}
-}
-
-func isLoggedIn(r *http.Request) bool {
-	return true
-}
-
-func isLoggedOut(r *http.Request) bool {
-	return !isLoggedIn(r)
-}
-
-func checkPasswordTry(w http.ResponseWriter) bool {
-	if passwordTry >= passwordMaxTry {
-		// log.Fatal()
-		_ = db.Close()
-		goutil.JsonMessage(w, "No more try. Input wrong password too many times.", 403)
-		return true
-	}
-	return false
 }
