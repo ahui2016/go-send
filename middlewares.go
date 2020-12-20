@@ -48,7 +48,7 @@ func checkContentLength(r *http.Request, length int64) error {
 func checkLoginHtml(c *fiber.Ctx) error {
 	if isLoggedOut(c) {
 		if err := checkPasswordTry(c); err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 		return c.Redirect("/public/login.html")
 	}

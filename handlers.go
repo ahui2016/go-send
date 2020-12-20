@@ -24,7 +24,7 @@ func loginHandler(c *fiber.Ctx) error {
 	if c.FormValue("password") != config.Password {
 		passwordTry++
 		if err := checkPasswordTry(c); err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 		return jsonError(c, "Wrong Password", 400)
 	}
@@ -65,13 +65,13 @@ func uploadHandler(c *fiber.Ctx) error {
 
 	fileContents, err := getFileContents(c)
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 
 	filename := c.FormValue("filename")
 	message, err := db.NewFileMsg(filename)
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 	message.Checksum = c.FormValue("checksum")
 	message.FileSize = int64(len(fileContents))
@@ -82,28 +82,25 @@ func uploadHandler(c *fiber.Ctx) error {
 
 	// 至此，message 的全部内容都已经填充完毕，可以写入数据库。
 	if err := db.Insert(message); err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 
 	// 数据库操作成功，保存文件（如果是图片，则顺便生成缩略图）。
 	// 不可在数据库操作结束之前保存文件，因为数据库操作发生错误时不应保存文件。
 	if err := writeFile(message, fileContents); err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 
 	// 如果前端传来缩略图，就保存下来。如果没有，则忽略不管。
 	if thumbFile, err := getThumbnail(c); err == nil {
 		err = ioutil.WriteFile(thumbFilePath(message.ID), thumbFile, 0600)
 		if err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 	}
 
 	// 自动删除过期条目
-	if err := deleteExpiredItems(); err != nil {
-		return jsonErr500(c, err)
-	}
-	return nil
+	return deleteExpiredItems()
 }
 
 func addTextMsg(c *fiber.Ctx) error {
@@ -113,14 +110,14 @@ func addTextMsg(c *fiber.Ctx) error {
 	textMsg, ok := createAnchor(c.FormValue("text-msg"))
 	message, err := db.InsertTextMsg(textMsg)
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 
 	// 如果 ok, 表示 textMsg 是一个 anchor.
 	if ok {
 		message.FileType = model.GosendAnchor
 		if err := db.DB.Save(message); err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 	}
 	return c.JSON(message)
@@ -135,12 +132,9 @@ func deleteHandler(c *fiber.Ctx) error {
 		return jsonError(c, err.Error(), 400)
 	}
 	if err := goutil.DeleteFiles(getFileAndThumb(id)); err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
-	if err := db.Delete(id); err != nil {
-		return jsonErr500(c, err)
-	}
-	return nil
+	return db.Delete(id)
 }
 
 func updateDatetime(c *fiber.Ctx) error {
@@ -151,10 +145,7 @@ func updateDatetime(c *fiber.Ctx) error {
 	if err != nil {
 		return jsonError(c, err.Error(), 400)
 	}
-	if err := db.UpdateDatetime(id); err != nil {
-		return jsonErr500(c, err)
-	}
-	return nil
+	return db.UpdateDatetime(id)
 }
 
 func executeCommand(c *fiber.Ctx) error {
@@ -165,20 +156,20 @@ func executeCommand(c *fiber.Ctx) error {
 	case "zip-all-files":
 		message, err := zipAllFiles()
 		if err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 		return c.JSON(message)
 	case "delete-all-files":
 		if err := deleteAllFiles(); err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 	case "delete-10-files":
 		if err := deleteOldFiles(10); err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 	case "delete-10-items":
 		if err := deleteOldItems(10); err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 	case "delete-grey-items":
 		err := deleteGreyItems()
@@ -186,7 +177,7 @@ func executeCommand(c *fiber.Ctx) error {
 			return jsonError(c, "暂时没有文件变灰", 404)
 		}
 		if err != nil {
-			return jsonErr500(c, err)
+			return err
 		}
 	default:
 		return jsonError(c, "unknown command", 400)
@@ -205,7 +196,7 @@ func getTotalSize(c *fiber.Ctx) error {
 func getAllAnchors(c *fiber.Ctx) error {
 	all, err := db.AllAnchors()
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 	return c.JSON(all)
 }
@@ -213,7 +204,7 @@ func getAllAnchors(c *fiber.Ctx) error {
 func getAllClips(c *fiber.Ctx) error {
 	all, err := db.AllClips()
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 	return c.JSON(all)
 }
@@ -224,10 +215,7 @@ func addClipMsg(c *fiber.Ctx) error {
 
 	textMsg := c.FormValue("text-msg")
 	_, err := db.InsertClip(textMsg, config.ClipsLimit)
-	if err != nil {
-		return jsonErr500(c, err)
-	}
-	return nil
+	return err
 }
 
 func deleteClip(c *fiber.Ctx) error {
@@ -238,19 +226,13 @@ func deleteClip(c *fiber.Ctx) error {
 	if err != nil {
 		return jsonError(c, err.Error(), 400)
 	}
-	if err := db.DeleteClip(id); err != nil {
-		return jsonErr500(c, err)
-	}
-	return nil
+	return db.DeleteClip(id)
 }
 
 func deleteAllClips(c *fiber.Ctx) error {
 	db.Lock()
 	defer db.Unlock()
-	if err := db.DeleteAllClips(); err != nil {
-		return jsonErr500(c, err)
-	}
-	return nil
+	return db.DeleteAllClips()
 }
 
 func updateClipDatetime(c *fiber.Ctx) error {
@@ -261,16 +243,13 @@ func updateClipDatetime(c *fiber.Ctx) error {
 	if err != nil {
 		return jsonError(c, err.Error(), 400)
 	}
-	if err := db.UpdateClipDatetime(id); err != nil {
-		return jsonErr500(c, err)
-	}
-	return nil
+	return db.UpdateClipDatetime(id)
 }
 
 func getLastText(c *fiber.Ctx) error {
 	textMsg, err := db.LastTextMsg()
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 	return c.SendString(textMsg)
 }
@@ -281,12 +260,12 @@ func simpleUploadHandler(c *fiber.Ctx) error {
 
 	header, contents, err := getFileHeaderContents(c, "file")
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 
 	message, err := db.NewFileMsg(header.Filename)
 	if err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 	if err := checkImage(c, message, contents); err != nil {
 		return jsonError(c, err.Error(), 400)
@@ -296,13 +275,23 @@ func simpleUploadHandler(c *fiber.Ctx) error {
 
 	// 至此，message 的全部内容都已经填充完毕，可以写入数据库。
 	if err := db.Insert(message); err != nil {
-		return jsonErr500(c, err)
+		return err
 	}
 
 	// 数据库操作成功，保存文件（如果是图片，则顺便生成缩略图）。
 	// 不可在数据库操作结束之前保存文件，因为数据库操作发生错误时不应保存文件。
-	if err := writeFile(message, contents); err != nil {
-		return jsonErr500(c, err)
+	return writeFile(message, contents)
+}
+
+func errorHandler(c *fiber.Ctx, err error) error {
+	code := fiber.StatusInternalServerError
+	if e, ok := err.(*fiber.Error); ok {
+		code = e.Code
+	}
+	err = c.Status(code).JSON(fiber.Map{"message": err.Error()})
+	if err != nil {
+		// In case the SendFile fails
+		return c.Status(500).SendString("Internal Server Error")
 	}
 	return nil
 }

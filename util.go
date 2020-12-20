@@ -26,7 +26,7 @@ type (
 )
 
 func jsonMessage(c *fiber.Ctx, msg string) error {
-	return c.JSON(fiber.Map{"message": msg})
+	return c.Status(200).JSON(fiber.Map{"message": msg})
 }
 
 func jsonMsgOK(c *fiber.Ctx) error {
@@ -37,9 +37,11 @@ func jsonError(c *fiber.Ctx, msg string, status int) error {
 	return c.Status(status).JSON(fiber.Map{"message": msg})
 }
 
+/*
 func jsonErr500(c *fiber.Ctx, err error) error {
 	return jsonError(c, err.Error(), 500)
 }
+*/
 
 func isLoggedIn(c *fiber.Ctx) bool {
 	return db.SessionCheck(c)

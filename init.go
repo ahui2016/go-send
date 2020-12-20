@@ -37,7 +37,7 @@ const (
 
 	// 100 MB, for http.MaxBytesReader
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
-	maxBodySize int64 = 1024 * 1024 * 100
+	maxBodySize = 1024 * 1024 * 100
 
 	// 512 KB, 普通请求（没有文件的请求）需要限制更严格。
 	defaultBodySize int64 = 1 << 19

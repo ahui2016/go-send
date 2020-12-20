@@ -11,7 +11,10 @@ import (
 func main() {
 	defer func() { _ = db.Close() }()
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		BodyLimit:    maxBodySize,
+		ErrorHandler: errorHandler,
+	})
 
 	app.Use(limiter.New(limiter.Config{
 		Max: 300,
@@ -37,18 +40,18 @@ func main() {
 	api.Get("/total-size", getTotalSize)
 	api.Get("/all-bookmarks", getAllAnchors)
 	api.Get("/all-clips", getAllClips)
+	api.Get("/delete-all-clips", deleteAllClips)
 	api.Post("/add-text-msg", addTextMsg)
 	api.Post("/delete", deleteHandler)
 	api.Post("/update-datetime", updateDatetime)
 	api.Post("/execute-command", executeCommand)
 	api.Post("/delete-clip", deleteClip)
-	api.Post("/delete-all-clips", deleteAllClips)
 	api.Post("/update-clip-datetime", updateClipDatetime)
 
 	cli := app.Group("/cli", checkPassword)
+	cli.Get("/last-text", getLastText)
 	cli.Post("/add-clip", addClipMsg)
 	cli.Post("/add-text", addTextMsg)
-	cli.Post("/last-text", getLastText)
 	cli.Post("/add-photo", simpleUploadHandler)
 
 	log.Print(config.Address)
