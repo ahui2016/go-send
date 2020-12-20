@@ -45,23 +45,6 @@ func checkContentLength(r *http.Request, length int64) error {
 	return nil
 }
 
-/*
-func checkLoginForFileServer(h http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if passwordTry >= passwordMaxTry {
-			_ = db.Close()
-			http.NotFound(w, r)
-			return
-		}
-		if isLoggedOut(r) {
-			http.NotFound(w, r)
-			return
-		}
-		h.ServeHTTP(w, r)
-	}
-}
-*/
-
 func checkLoginHtml(c *fiber.Ctx) error {
 	if isLoggedOut(c) {
 		if err := checkPasswordTry(c); err != nil {
@@ -79,23 +62,12 @@ func checkLoginJson(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func checkPassword(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.FormValue("password") != config.Password {
-			goutil.JsonMessage(w, "Wrong Password", 400)
-			return
-		}
-		fn(w, r)
+func checkPassword(c *fiber.Ctx) error {
+	if c.FormValue("password") != config.Password {
+		return jsonError(c, "Wrong Password", 400)
 	}
+	return nil
 }
-
-/*
-func handlerToFunc(h http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTP(w, r)
-	}
-}
-*/
 
 func authWebDav(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
