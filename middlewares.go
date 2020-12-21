@@ -1,53 +1,24 @@
 package main
 
 import (
-	"errors"
-	"net/http"
-	"strconv"
-
-	"github.com/ahui2016/goutil"
 	"github.com/gofiber/fiber/v2"
 )
 
-// setBodySize(fn, defaultBodySize)
-func bodyLimit(fn http.HandlerFunc) http.HandlerFunc {
-	return setBodySize(fn, defaultBodySize)
-}
-
-// setBodySize(fn, maxBodySize)
-func maxBodyLimit(fn http.HandlerFunc) http.HandlerFunc {
-	return setBodySize(fn, maxBodySize)
-}
-
-// 限制从前端传输过来的数据大小。
-func setBodySize(fn http.HandlerFunc, max int64) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if goutil.CheckErr(w, checkContentLength(r, max), 500) {
-			return
-		}
-		r.Body = http.MaxBytesReader(w, r.Body, max)
-		fn(w, r)
-	}
-}
-
-// func checkContentLength(c *fiber.Ctx) error {
-
-// }
-
-// Check the Content-Length header immediately when the request comes in.
-func checkContentLength(r *http.Request, length int64) error {
-	if r.Header.Get("Content-Length") == "" {
-		return nil
-	}
-	size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
-	if err != nil {
-		return err
-	}
-	if size > length {
-		return errors.New("file too large")
+/*
+func maxBodyLimit(c *fiber.Ctx) error {
+	if err := checkContentLength(c, maxBodySize); err != nil {
+		return c.Status(413).JSON(err.Error())
 	}
 	return nil
 }
+
+func checkContentLength(c *fiber.Ctx, length int) error {
+	if c.Request().Header.ContentLength() > length {
+		return errors.New("Requset Entity Too Large")
+	}
+	return nil
+}
+*/
 
 func checkLoginHtml(c *fiber.Ctx) error {
 	if isLoggedOut(c) {
@@ -73,6 +44,7 @@ func checkPassword(c *fiber.Ctx) error {
 	return nil
 }
 
+/*
 func authWebDav(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, password, ok := r.BasicAuth()
@@ -88,3 +60,4 @@ func authWebDav(h http.Handler) http.HandlerFunc {
 		h.ServeHTTP(w, r)
 	}
 }
+*/

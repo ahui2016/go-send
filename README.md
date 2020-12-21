@@ -28,18 +28,20 @@
 
 ## iPhone Shortcut (快捷指令)
 
+(注意：下面各图中的网址是错的，我懒得重新截图了，以下面所示的网址为准。)
+
 - 接收最近一条文本消息
-  - 需要用到的网址 `https://send.ai42.xyz/api/last-text?password=abc`
+  - 需要用到的网址 `https://send.ai42.xyz/cli/last-text?password=abc`
   - 具体设置方法如图 https://send.ai42.xyz/public/go-send-get-last.jpeg
   - 我设置的是接收消息后保存到剪贴板，但根据需要也可以很容易改成保存到记事本、提醒、日历等
 
 - 发送文本消息
-  - 需要用到的网址 `https://send.ai42.xyz/api/add-text`
+  - 需要用到的网址 `https://send.ai42.xyz/cli/add-text`
   - 具体设置方法如图 https://send.ai42.xyz/public/go-send-add-text.jpeg
   - 如图所示，我设置的是发送剪贴板的内容
 
 - 发送图片
-  - 需要用到的网址 `https://send.ai42.xyz/api/add-photo`
+  - 需要用到的网址 `https://send.ai42.xyz/cli/add-photo`
   - 具体设置方法如图 https://send.ai42.xyz/public/go-send-add-photo.jpeg
   - 如图所示，我增加了一个缩小图片的流程，那是因为演示版只能接收很小的文件，正式版可发原图
   - 设置成功后，打开相册选择图片，点击发送，选择快捷指令即可

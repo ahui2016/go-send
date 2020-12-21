@@ -17,6 +17,7 @@ func main() {
 		ErrorHandler: errorHandler,
 	})
 
+	// app.Use(maxBodyLimit)
 	app.Use(limiter.New(limiter.Config{
 		Max: 300,
 	}))
