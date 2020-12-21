@@ -20,12 +20,20 @@ func checkContentLength(c *fiber.Ctx, length int) error {
 }
 */
 
+func responseNoCache(c *fiber.Ctx) error {
+	c.Response().Header.Set(
+		fiber.HeaderCacheControl,
+		"no-store, no-cache",
+	)
+	return c.Next()
+}
+
 func checkLoginHtml(c *fiber.Ctx) error {
 	if isLoggedOut(c) {
 		if err := checkPasswordTry(c); err != nil {
 			return err
 		}
-		return c.Redirect("/public/login.html")
+		return c.SendFile("./public/login.html")
 	}
 	return c.Next()
 }
@@ -41,7 +49,7 @@ func checkPassword(c *fiber.Ctx) error {
 	if c.FormValue("password") != config.Password {
 		return jsonError(c, "Wrong Password", 400)
 	}
-	return nil
+	return c.Next()
 }
 
 /*

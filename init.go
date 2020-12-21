@@ -40,7 +40,7 @@ const (
 	maxBodySize = 1024 * 1024 * 100
 
 	// 512 KB, 普通请求（没有文件的请求）需要限制更严格。
-	defaultBodySize int64 = 1 << 19
+	// defaultBodySize int64 = 1 << 19
 )
 
 var (

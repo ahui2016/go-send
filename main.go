@@ -18,6 +18,7 @@ func main() {
 	})
 
 	// app.Use(maxBodyLimit)
+	app.Use(responseNoCache)
 	app.Use(limiter.New(limiter.Config{
 		Max: 300,
 	}))
@@ -43,6 +44,8 @@ func main() {
 	api.Get("/all-bookmarks", getAllAnchors)
 	api.Get("/all-clips", getAllClips)
 	api.Get("/delete-all-clips", deleteAllClips)
+	api.Post("/checksum", checksumHandler)
+	api.Post("/upload-file", uploadHandler)
 	api.Post("/add-text-msg", addTextMsg)
 	api.Post("/delete", deleteHandler)
 	api.Post("/update-datetime", updateDatetime)
@@ -56,6 +59,5 @@ func main() {
 	cli.Post("/add-text", addTextMsg)
 	cli.Post("/add-photo", simpleUploadHandler)
 
-	log.Print(config.Address)
 	log.Fatal(app.Listen(config.Address))
 }
