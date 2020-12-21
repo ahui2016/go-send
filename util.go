@@ -312,7 +312,7 @@ func getTitle(addr string) (title string, ok bool) {
 	}
 	defer func() { _ = res.Body.Close() }()
 
-	reTitle := regexp.MustCompile(`<title>(.+)</title>`)
+	reTitle := regexp.MustCompile(`<title ?.*>(.+)</title>`)
 	blob := make([]byte, 1024)
 	for {
 		_, err := res.Body.Read(blob)

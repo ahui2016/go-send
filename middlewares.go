@@ -30,6 +30,10 @@ func setBodySize(fn http.HandlerFunc, max int64) http.HandlerFunc {
 	}
 }
 
+// func checkContentLength(c *fiber.Ctx) error {
+
+// }
+
 // Check the Content-Length header immediately when the request comes in.
 func checkContentLength(r *http.Request, length int64) error {
 	if r.Header.Get("Content-Length") == "" {

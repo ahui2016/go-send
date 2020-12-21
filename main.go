@@ -13,6 +13,7 @@ func main() {
 
 	app := fiber.New(fiber.Config{
 		BodyLimit:    maxBodySize,
+		Concurrency:  5,
 		ErrorHandler: errorHandler,
 	})
 
