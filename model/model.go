@@ -2,13 +2,13 @@ package model // import "github.com/ahui2016/go-send/model"
 
 import (
 	"errors"
-	"mime"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/ahui2016/goutil"
+	"github.com/gofiber/fiber/v2/utils"
 )
 
 // ISO8601 需要根据服务器的具体时区来设定正确的时区
@@ -134,8 +134,8 @@ func (clip *ClipText) SetTextMsg(textMsg string) error {
 
 func typeByFilename(filename string) (filetype string) {
 	ext := strings.ToLower(filepath.Ext(filename))
-	filetype = mime.TypeByExtension(ext)
 	ext = strings.TrimPrefix(ext, ".")
+	filetype = utils.GetMIME(ext)
 	switch ext {
 	case "zip", "rar", "7z", "gz", "tar", "bz", "bz2", "xz":
 		filetype = "compressed/" + ext

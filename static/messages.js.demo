@@ -249,7 +249,7 @@ executeBtn.click(event => {
     event.preventDefault();
 
     let command = commands.val();
-    if (command != 'zip-all-files') {
+    if (!(command == 'zip-all-files' || command == 'bookmarks')) {
         insertInfoAlert('演示版暂不提供此功能，正式版可用', $('#all-messages'));
         return;
     }

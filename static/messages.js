@@ -305,7 +305,7 @@ executeBtn.click(event => {
   }
 
   if (command == 'bookmarks') {
-    window.location = '/bookmarks';
+    window.location = '/static/bookmarks.html';
     return;
   }
 

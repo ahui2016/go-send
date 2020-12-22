@@ -32,10 +32,9 @@ const (
 	maxAge = 99 * time.Hour * 24
 
 	// databaseCapacity 控制数据库总容量，
-	// maxBodySize 控制单个文件的体积。
 	databaseCapacity = 1 << 30 // 1GB
 
-	// 100 MB, for http.MaxBytesReader
+	// maxBodySize 控制单个文件的体积, 100 MB.
 	// 注意在 Nginx 的设置里进行相应的设置，例如 client_max_body_size 100m
 	maxBodySize = 1024 * 1024 * 100
 
