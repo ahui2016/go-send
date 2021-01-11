@@ -43,23 +43,6 @@ func jsonErr500(c *fiber.Ctx, err error) error {
 }
 */
 
-func isLoggedIn(c *fiber.Ctx) bool {
-	return db.SessionCheck(c)
-}
-
-func isLoggedOut(c *fiber.Ctx) bool {
-	return !isLoggedIn(c)
-}
-
-func checkPasswordTry(c *fiber.Ctx) error {
-	if passwordTry >= passwordMaxTry {
-		_ = db.Close()
-		msg := "No more try. Input wrong password too many times."
-		return errors.New(msg)
-	}
-	return nil
-}
-
 func getFileHeaderContents(c *fiber.Ctx, key string) (
 	header *multipart.FileHeader, contents []byte, err error) {
 

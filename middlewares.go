@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -28,7 +30,7 @@ func responseNoCache(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func checkLoginHtml(c *fiber.Ctx) error {
+func checkLoginHTML(c *fiber.Ctx) error {
 	if isLoggedOut(c) {
 		if err := checkPasswordTry(c); err != nil {
 			return err
@@ -38,7 +40,7 @@ func checkLoginHtml(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func checkLoginJson(c *fiber.Ctx) error {
+func checkLoginJSON(c *fiber.Ctx) error {
 	if isLoggedOut(c) {
 		return jsonError(c, "Require Login", fiber.StatusUnauthorized)
 	}
@@ -50,6 +52,23 @@ func checkPassword(c *fiber.Ctx) error {
 		return jsonError(c, "Wrong Password", 400)
 	}
 	return c.Next()
+}
+
+func isLoggedIn(c *fiber.Ctx) bool {
+	return db.SessionCheck(c)
+}
+
+func isLoggedOut(c *fiber.Ctx) bool {
+	return !isLoggedIn(c)
+}
+
+func checkPasswordTry(c *fiber.Ctx) error {
+	if passwordTry >= passwordMaxTry {
+		_ = db.Close()
+		msg := "No more try. Input wrong password too many times."
+		return errors.New(msg)
+	}
+	return nil
 }
 
 /*

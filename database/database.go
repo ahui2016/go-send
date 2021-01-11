@@ -64,8 +64,7 @@ func (db *DB) Open(maxAge time.Duration, cap int64, dbPath string) (err error) {
 	err2 := db.initFirstID()
 	err3 := db.initFirstClipID()
 	err4 := db.initTotalSize()
-	err5 := db.DB.ReIndex(&Message{}) // 后续要删除
-	return goutil.WrapErrors(err1, err2, err3, err4, err5)
+	return goutil.WrapErrors(err1, err2, err3, err4)
 }
 
 // Close 只是 db.DB.Close(), 不清空 db 里的其它部分。
@@ -231,12 +230,10 @@ func (db *DB) newClip(textMsg string) (clip *ClipText, err error) {
 func (db *DB) getNextID() (nextID IncreaseID, err error) {
 	currentID, err := db.getCurrentID()
 	if err != nil {
-		return nextID, err
+		return
 	}
 	nextID = currentID.Increase()
-	if err := db.DB.Set(metadataBucket, currentIDKey, &nextID); err != nil {
-		return nextID, err
-	}
+	err = db.DB.Set(metadataBucket, currentIDKey, &nextID)
 	return
 }
 

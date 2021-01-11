@@ -27,18 +27,17 @@ func main() {
 
 	app.Use(favicon.New(favicon.Config{File: "public/icons/favicon.ico"}))
 
-	app.Use("/static", checkLoginHtml)
+	app.Use("/static", checkLoginHTML)
 	app.Static("/static", "./static")
-	app.Use("/files", checkLoginHtml)
+	app.Use("/files", checkLoginHTML)
 	app.Static("/files", filesDir)
 
-	app.Use("/home", checkLoginHtml)
-	app.Get("/home", homePage)
-
 	app.Get("/", redirectToHome)
+	app.Use("/home", checkLoginHTML)
+	app.Get("/home", homePage)
 	app.Post("/login", loginHandler)
 
-	api := app.Group("/api", checkLoginJson)
+	api := app.Group("/api", checkLoginJSON)
 	api.Get("/all", getAllHandler)
 	api.Get("/total-size", getTotalSize)
 	api.Get("/all-bookmarks", getAllAnchors)
@@ -54,7 +53,7 @@ func main() {
 	api.Post("/update-clip-datetime", updateClipDatetime)
 
 	cli := app.Group("/cli", checkPassword)
-	cli.Get("/last-text", getLastText)
+	cli.Post("/last-text", getLastText)
 	cli.Post("/add-clip", addClipMsg)
 	cli.Post("/add-text", addTextMsg)
 	cli.Post("/add-photo", simpleUploadHandler)

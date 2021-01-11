@@ -186,11 +186,14 @@ func executeCommand(c *fiber.Ctx) error {
 }
 
 func getTotalSize(c *fiber.Ctx) error {
-	size, _ := db.GetTotalSize()
-	resp := make(map[string]int64)
-	resp["totalSize"] = size
-	resp["capacity"] = databaseCapacity
-	return c.JSON(resp)
+	size, err := db.GetTotalSize()
+	if err != nil {
+		return err
+	}
+	return c.JSON(fiber.Map{
+		"totalSize": size,
+		"capacity":  databaseCapacity,
+	})
 }
 
 func getAllAnchors(c *fiber.Ctx) error {
@@ -290,7 +293,7 @@ func errorHandler(c *fiber.Ctx, err error) error {
 	}
 	err = c.Status(code).JSON(fiber.Map{"message": err.Error()})
 	if err != nil {
-		// In case the SendFile fails
+		// In case the c.JSON fails
 		return c.Status(500).SendString("Internal Server Error")
 	}
 	return nil
