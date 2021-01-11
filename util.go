@@ -46,11 +46,11 @@ func jsonErr500(c *fiber.Ctx, err error) error {
 func getFileHeaderContents(c *fiber.Ctx, key string) (
 	header *multipart.FileHeader, contents []byte, err error) {
 
-	fileHeader, err := c.FormFile(key)
+	header, err = c.FormFile(key)
 	if err != nil {
 		return nil, nil, err
 	}
-	file, err := fileHeader.Open()
+	file, err := header.Open()
 	if err != nil {
 		return nil, nil, err
 	}
