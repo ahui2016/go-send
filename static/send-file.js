@@ -94,7 +94,7 @@ async function checkHashUpload(i) {
 
     if (file.isBroken) {
         setCardDanger(file.itemID, '文件有问题，拒绝上传');
-        await uploadOneByOne(i);
+        uploadOneByOne(i);
         return;
     }
 

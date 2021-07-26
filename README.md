@@ -17,39 +17,6 @@
 - 支持快捷键发送系统剪贴板内容 (可发送纯文本或文件)
 
 
-## demo 演示
-
-- https://send.ai42.xyz
-- 密码: abc
-- 演示版会自动压缩图片，正式版则是上传原图
-- 演示版限制单个文件 512KB 以下，数据库总容量 10MB, 正式版可自由设定
-- 演示版限制文件 24 小时变灰，30 天自动删除，正式版可自由设定
-
-
-## iPhone Shortcut (快捷指令)
-
-(注意：下面各图中的网址是错的，我懒得重新截图了，以下面所示的网址为准。)
-
-- 接收最近一条文本消息
-  - 需要用到的网址 `https://send.ai42.xyz/cli/last-text?password=abc`
-  - 具体设置方法如图 https://send.ai42.xyz/public/go-send-get-last.jpeg
-  - 我设置的是接收消息后保存到剪贴板，但根据需要也可以很容易改成保存到记事本、提醒、日历等
-
-- 发送文本消息
-  - 需要用到的网址 `https://send.ai42.xyz/cli/add-text`
-  - 具体设置方法如图 https://send.ai42.xyz/public/go-send-add-text.jpeg
-  - 如图所示，我设置的是发送剪贴板的内容
-
-- 发送图片
-  - 需要用到的网址 `https://send.ai42.xyz/cli/add-photo`
-  - 具体设置方法如图 https://send.ai42.xyz/public/go-send-add-photo.jpeg
-  - 如图所示，我增加了一个缩小图片的流程，那是因为演示版只能接收很小的文件，正式版可发原图
-  - 设置成功后，打开相册选择图片，点击发送，选择快捷指令即可
-  - 目前每次只能发送一张图片，需要一次发送多张，或者需要发送视频、文档请使用网页版
-
-- 注意，以上是使用了我的 demo 服务器，只是方便试用体验，真正使用还是需要用户自行搭建服务器的。
-
-
 ## 技术特点
 
 - 后端采用 Go, 前端采用 jQuery 和 Bootstrap, 都是非常简单直白的代码
@@ -117,23 +84,3 @@ $ ./go-send &
 - 安装 go-send-cli 后，无需打开浏览器，在终端即可接收或发布文本消息或文件
 - https://github.com/ahui2016/go-send-cli
 
-
-## 发送系统剪贴板内容
-
-- Windows
-  - 详情请看 https://github.com/ahui2016/gosend.ahk
-- iPhone/iPad
-  - 可通过快捷命令实现该功能，具体方法见上文 “iPhone Shortcut (快捷指令)” 章节。
-- Mac
-  - 我没有 Mac, 因此没做 Mac 版，但我猜 Mac 里也有类似 AutoHotkey 或快捷指令的工具，
-    Mac 用户可自行实现，应该不难。
-  - 如果有人实现了 Mac 版，请反馈给我，在此先谢谢了！
-  - 如果实在没人做，我也可能自己做（呃）。
-  
-
-## Go-send Project
-
-由于 go-send 对 Windows, iOS, Android, Linux, macOS 等不同平台提供（或计划提供）
-便捷的使用方法，因此很多功能不方便直接写在主程序主仓库里，显得稍有点乱，因此建了一个 project 页面汇总信息：
-
-https://github.com/users/ahui2016/projects/1
